@@ -31,6 +31,14 @@ public class Main {
 
             ReferralRepository rR =
                     new ReferralRepository("src/data/referrals.csv");
+            
+            StaffRepository sR = 
+                    new StaffRepository("src/data/staff.csv");
+            
+            //================================
+            // LOGIN REPOSITORY
+            // ================================
+            LoginRepository logR = new LoginRepository(pr, cr, sR);
 
             // ================================
             // REFERRAL MANAGER (Singleton)
@@ -48,6 +56,10 @@ public class Main {
             AppointmentView av = new AppointmentView();
             PrescriptionView presV = new PrescriptionView();
             ReferralView rv = new ReferralView();
+            //==============================
+            // LOGIN VIEW - ADDED
+            //==============================
+            LoginView logview = new LoginView();
 
             // ================================
             // CONTROLLERS (MATCHING YOUR CONSTRUCTORS)
@@ -80,12 +92,38 @@ public class Main {
                     ar,   // AppointmentRepository
                     rv    // ReferralView
             );
+            
+            //============================
+            // LOGIN CONTROLLER - ADDED
+            //===========================
+            LoginController lc = new LoginController(
+                    logview,
+                    logR
+            );
+            
+            // ============================================================
+            // CHANGE 1: SET MAIN CONTROLLERS FOR LOGIN CONTROLLER
+            // This allows LoginController to open MainFrame after login
+            // ============================================================
+            lc.setMainControllers(pc, cc, ac, prc, rc);
 
-            // ================================
-            // MAIN FRAME
-            // ================================
-            MainFrame frame = new MainFrame(pc, cc, ac, prc, rc);
-            frame.setVisible(true);
+            // ============================================================
+            // CHANGE 2: CREATE LOGIN WINDOW INSTEAD OF DIRECT MAINFRAME
+            // ============================================================
+            javax.swing.JFrame loginWindow = new javax.swing.JFrame("Healthcare Management System - Login");
+            loginWindow.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+            loginWindow.setContentPane(logview);  // Add LoginView (JPanel) to JFrame
+            loginWindow.pack();
+            loginWindow.setLocationRelativeTo(null);
+            loginWindow.setVisible(true);
+            
+            // ============================================================
+            // CHANGE 3: REMOVE DIRECT MAINFRAME CREATION
+            // MainFrame will be opened by LoginController after successful login
+            // ============================================================
+            // OLD CODE (COMMENTED OUT):
+            // MainFrame frame = new MainFrame(pc, cc, ac, prc, rc);
+            // frame.setVisible(true);
         });
     }
 }
