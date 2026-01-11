@@ -33,7 +33,7 @@ public class ClinicianView extends JPanel {
         // ============================================================
         model = new DefaultTableModel(
                 new Object[]{
-                        "ID","Title","First","Last","Speciality","GMC",
+                        "ID","First","Last","Title","Speciality","GMC",
                         "Phone","Email","Workplace ID","Workplace Type",
                         "Employment","Start Date"
                 }, 0
