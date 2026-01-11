@@ -55,6 +55,7 @@ public class MainFrame extends JFrame {
                 // Patients can only see Appointments and Prescriptions
                 tabs.addTab("My Appointments", ac.getView());
                 tabs.addTab("My Prescriptions", prc.getView());
+                tabs.addTab("My Profile", pc.getView());
                 break;
                 
             case "clinician":

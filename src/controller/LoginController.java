@@ -12,7 +12,7 @@ public class LoginController {
     private boolean isAuthenticated = false;
     private String currentUserRole;
     private Object currentUser;
-    private String currentUserId; // ADDED: Store userId at class level
+    private String currentUserId; // Store userId at class level
     
     // Store references to main controllers (will be set from Main.java)
     private PatientController patientController;
@@ -27,7 +27,7 @@ public class LoginController {
         initController();
     }
     
-    // NEW METHOD: Set main controllers (called from Main.java)
+    // Set main controllers (called from Main.java)
     public void setMainControllers(
             PatientController pc,
             ClinicianController cc,
@@ -63,11 +63,11 @@ public class LoginController {
                 isAuthenticated = true;
                 currentUserRole = user.getRole();
                 currentUser = user.getUserObject();
-                currentUserId = userId; // STORE userId at class level
+                currentUserId = userId; // Store userId at class level
                 
                 view.showMessage("Login successful! Welcome " + userId, false);
                 
-                // NEW: Close login window and open MainFrame
+                // Close login window and open MainFrame
                 SwingUtilities.invokeLater(() -> {
                     // Get the login window (JFrame) that contains this view
                     JFrame loginWindow = (JFrame) SwingUtilities.getWindowAncestor(view);
@@ -75,7 +75,7 @@ public class LoginController {
                     // Show success message
                     JOptionPane.showMessageDialog(loginWindow,
                         "Welcome " + currentUserRole.toUpperCase() + "!\n" +
-                        "User ID: " + currentUserId + "\n" + // CHANGED: userId to currentUserId
+                        "User ID: " + currentUserId + "\n" +
                         "Opening main application...",
                         "Login Successful", 
                         JOptionPane.INFORMATION_MESSAGE);
@@ -97,7 +97,7 @@ public class LoginController {
         }
     }
 
-    // NEW METHOD: Open main application after successful login
+    // Open main application after successful login
     private void openMainApplication() {
         if (patientController == null || clinicianController == null || 
             appointmentController == null || prescriptionController == null || 
@@ -109,6 +109,23 @@ public class LoginController {
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        // ============================================================
+        // NEW: PASS USER ID TO CONTROLLERS FOR DATA FILTERING
+        // ============================================================
+        if ("patient".equals(currentUserRole)) {
+            // For patients, set the current patient ID for filtering
+            patientController.setCurrentPatientId(currentUserId);
+            appointmentController.setCurrentPatientId(currentUserId);
+            prescriptionController.setCurrentPatientId(currentUserId);
+            
+            // Patients shouldn't see Referrals tab, so we don't need to filter it
+        } else if ("clinician".equals(currentUserRole)) {
+            // For clinicians, they can see all data, no filtering needed
+            // But we could set clinician ID if needed for future features
+            clinicianController.setCurrentClinicianId(currentUserId);
+        }
+        // Staff and Admin see all data without filtering
         
         // Create and show MainFrame with user role
         MainFrame mainFrame = new MainFrame(
@@ -122,17 +139,17 @@ public class LoginController {
         
         mainFrame.setVisible(true);
         
-        // Optional: Show welcome message in main app
+        // Show welcome message in main app
         JOptionPane.showMessageDialog(mainFrame,
             "Welcome to Healthcare Management System!\n" +
             "Role: " + currentUserRole.toUpperCase() + "\n" +
-            "User ID: " + currentUserId + // CHANGED: userId to currentUserId
-            "\n\nAccess Level: " + getAccessDescription(currentUserRole),
+            "User ID: " + currentUserId + "\n\n" +
+            "Access Level: " + getAccessDescription(currentUserRole),
             "HMS Dashboard", 
             JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // NEW METHOD: Describe access level based on role
+    // Describe access level based on role
     private String getAccessDescription(String role) {
         switch (role.toLowerCase()) {
             case "patient":
@@ -148,7 +165,14 @@ public class LoginController {
         }
     }
     
-    // Getter for the view (required)
+    // ============================================================
+    // NEW: GETTER FOR CURRENT USER ID
+    // ============================================================
+    public String getCurrentUserId() {
+        return currentUserId;
+    }
+    
+    // Getter for the view
     public LoginView getView() {
         return view;
     }
@@ -171,7 +195,7 @@ public class LoginController {
         isAuthenticated = false;
         currentUserRole = null;
         currentUser = null;
-        currentUserId = null; // ADDED: Clear userId on logout
+        currentUserId = null; // Clear userId on logout
         view.clearFields();
         view.showMessage("Logged out successfully.", false);
     }

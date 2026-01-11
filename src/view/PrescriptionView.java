@@ -18,13 +18,14 @@ public class PrescriptionView extends JPanel {
     private DefaultTableModel model;
 
     private JLabel lblId;
+    private JLabel titleLabel; // Added for setting title
 
     private JComboBox<String> cbPatientId;
     private JComboBox<String> cbClinicianId;
     private JComboBox<String> cbDrug;
     private JComboBox<String> cbPharmacy;
-    private JComboBox<String> cbStatus;         // 🔥 STATUS DROPDOWN
-    private JComboBox<String> cbAppointmentId;  // 🔥 APPOINTMENT DROPDOWN
+    private JComboBox<String> cbStatus;
+    private JComboBox<String> cbAppointmentId;
 
     private JTextField txtPrescDate;
     private JTextField txtDosage;
@@ -36,6 +37,14 @@ public class PrescriptionView extends JPanel {
 
     private JTextArea txtInstructions;
 
+    // Button references for showing/hiding
+    private JButton btnAdd;
+    private JButton btnUpdate;
+    private JButton btnDelete;
+    private JPanel btnPanel;
+
+    private boolean readOnlyMode = false;
+
     private static final String DATE_PATTERN = "yyyy-MM-dd";
     private final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
 
@@ -43,6 +52,15 @@ public class PrescriptionView extends JPanel {
 
         setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // ============================================================
+        // TITLE PANEL
+        // ============================================================
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        titleLabel = new JLabel("Prescription Management");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        titlePanel.add(titleLabel);
+        add(titlePanel, BorderLayout.NORTH);
 
         // ============================================================
         // TABLE
@@ -54,21 +72,31 @@ public class PrescriptionView extends JPanel {
                         "Duration", "Qty", "Instructions",
                         "Pharmacy", "Status", "Issue", "Collected"
                 }, 0
-        );
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
+            }
+        };
         table = new JTable(model);
         table.setRowHeight(22);
-        add(new JScrollPane(table), BorderLayout.SOUTH);
+        
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setPreferredSize(new Dimension(800, 200));
+        add(tableScrollPane, BorderLayout.SOUTH);
 
         // ============================================================
         // FORM
         // ============================================================
         JPanel form = new JPanel(new GridBagLayout());
+        form.setBorder(BorderFactory.createTitledBorder("Prescription Details"));
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(6, 8, 6, 8);
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 0.5;
 
         lblId = new JLabel("RX001");
+        lblId.setFont(new Font("SansSerif", Font.BOLD, 12));
 
         cbPatientId    = new JComboBox<>();
         cbClinicianId  = new JComboBox<>();
@@ -129,31 +157,96 @@ public class PrescriptionView extends JPanel {
         gc.gridwidth = 3;
         form.add(new JScrollPane(txtInstructions), gc);
 
-        add(form, BorderLayout.CENTER);
+        JScrollPane formScrollPane = new JScrollPane(form);
+        formScrollPane.setPreferredSize(new Dimension(800, 300));
+        add(formScrollPane, BorderLayout.CENTER);
 
         // ============================================================
-        // BUTTONS
+        // BUTTONS PANEL
         // ============================================================
-        JButton btnAdd    = new JButton("Add");
-        JButton btnUpdate = new JButton("Update Selected");
-        JButton btnDelete = new JButton("Delete Selected");
+        btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        
+        btnAdd = new JButton("Add");
+        btnUpdate = new JButton("Update Selected");
+        btnDelete = new JButton("Delete Selected");
 
         btnAdd.addActionListener(e -> onAdd());
         btnUpdate.addActionListener(e -> onUpdate());
         btnDelete.addActionListener(e -> onDelete());
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         btnPanel.add(btnAdd);
         btnPanel.add(btnUpdate);
         btnPanel.add(btnDelete);
 
-        add(btnPanel, BorderLayout.NORTH);
+        add(btnPanel, BorderLayout.EAST);
 
+        // Table selection listener
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) loadSelectedRowIntoForm();
         });
+
+        // Initial UI state
+        updateUIState();
     }
 
+    // ============================================================
+    // NEW METHODS NEEDED BY CONTROLLER
+    // ============================================================
+    
+    public void setReadOnlyMode(boolean readOnly) {
+        this.readOnlyMode = readOnly;
+        updateUIState();
+    }
+    
+    public void showAddUpdateButtons() {
+        if (btnPanel != null) {
+            btnPanel.setVisible(true);
+        }
+        if (btnAdd != null) btnAdd.setVisible(true);
+        if (btnUpdate != null) btnUpdate.setVisible(true);
+        if (btnDelete != null) btnDelete.setVisible(true);
+    }
+    
+    public void hideAddUpdateButtons() {
+        if (btnPanel != null) {
+            btnPanel.setVisible(false);
+        }
+    }
+    
+    public void setTitle(String title) {
+        if (titleLabel != null) {
+            titleLabel.setText(title);
+        }
+    }
+    
+    private void updateUIState() {
+        // Set editable state for all input components
+        boolean editable = !readOnlyMode;
+        
+        cbPatientId.setEnabled(editable);
+        cbClinicianId.setEnabled(editable);
+        cbDrug.setEnabled(editable);
+        cbPharmacy.setEnabled(editable);
+        cbStatus.setEnabled(editable);
+        cbAppointmentId.setEnabled(editable);
+        
+        txtPrescDate.setEditable(editable);
+        txtDosage.setEditable(editable);
+        txtFrequency.setEditable(editable);
+        txtDuration.setEditable(editable);
+        txtQuantity.setEditable(editable);
+        txtIssueDate.setEditable(editable);
+        txtCollectionDate.setEditable(editable);
+        txtInstructions.setEditable(editable);
+        
+        // Update button visibility
+        if (readOnlyMode) {
+            hideAddUpdateButtons();
+        } else {
+            showAddUpdateButtons();
+        }
+    }
+    
     private void addPair(JPanel panel, GridBagConstraints gc, int row,
                          String label1, JComponent field1,
                          String label2, JComponent field2) {
@@ -228,7 +321,7 @@ public class PrescriptionView extends JPanel {
     }
 
     // ============================================================
-    // ADD
+    // BUTTON HANDLERS
     // ============================================================
     private void onAdd() {
         if (controller == null) return;
@@ -245,9 +338,6 @@ public class PrescriptionView extends JPanel {
         clearFormButKeepIds();
     }
 
-    // ============================================================
-    // UPDATE
-    // ============================================================
     private void onUpdate() {
         if (controller == null) return;
 
@@ -269,9 +359,6 @@ public class PrescriptionView extends JPanel {
         controller.updatePrescription(p);
     }
 
-    // ============================================================
-    // DELETE
-    // ============================================================
     private void onDelete() {
         if (controller == null) return;
 
@@ -293,7 +380,7 @@ public class PrescriptionView extends JPanel {
                 id,
                 (String) cbPatientId.getSelectedItem(),
                 (String) cbClinicianId.getSelectedItem(),
-                (String) cbAppointmentId.getSelectedItem(),   // 🔥 from dropdown
+                (String) cbAppointmentId.getSelectedItem(),
                 txtPrescDate.getText().trim(),
                 (String) cbDrug.getSelectedItem(),
                 txtDosage.getText().trim(),

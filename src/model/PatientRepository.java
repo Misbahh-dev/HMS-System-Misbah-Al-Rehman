@@ -15,10 +15,10 @@ public class PatientRepository {
     }
 
     public List<String> getAllIds() {
-    List<String> ids = new ArrayList<>();
-    for (Patient p : patients) ids.add(p.getId());
-    return ids;
-}
+        List<String> ids = new ArrayList<>();
+        for (Patient p : patients) ids.add(p.getId());
+        return ids;
+    }
 
     // ============================================================
     // LOAD PATIENTS FROM CSV (all 14 fields)
@@ -98,14 +98,99 @@ public class PatientRepository {
         }
     }
 
+    // ============================================================
+    // UPDATE PATIENT + UPDATE CSV
+    // ============================================================
+    public void update(Patient updatedPatient) {
+        // Find the patient by ID and update their information
+        for (int i = 0; i < patients.size(); i++) {
+            Patient patient = patients.get(i);
+            if (patient.getId().equals(updatedPatient.getId())) {
+                // Update the patient in the list
+                patients.set(i, updatedPatient);
+                
+                // Update the CSV file
+                try {
+                    // Rewrite the entire CSV file with updated data
+                    List<String[]> allData = new ArrayList<>();
+                    
+                    // Add header row first
+                    allData.add(new String[]{
+                        "patient_id", "first_name", "last_name", "date_of_birth", 
+                        "nhs_number", "gender", "phone_number", "email", 
+                        "address", "postcode", "emergency_contact_name", 
+                        "emergency_contact_phone", "registration_date", "gp_surgery_id"
+                    });
+                    
+                    // Add all patients (including updated one)
+                    for (Patient p : patients) {
+                        allData.add(new String[]{
+                            p.getId(),
+                            p.getFirstName(),
+                            p.getLastName(),
+                            p.getDateOfBirth(),
+                            p.getNhsNumber(),
+                            p.getGender(),
+                            p.getPhoneNumber(),
+                            p.getEmail(),
+                            p.getAddress(),
+                            p.getPostcode(),
+                            p.getEmergencyContactName(),
+                            p.getEmergencyContactPhone(),
+                            p.getRegistrationDate(),
+                            p.getGpSurgeryId()
+                        });
+                    }
+                    
+                    // Write back to CSV
+                    CsvUtils.writeCsv(csvPath, allData);
+                    
+                } catch (IOException ex) {
+                    System.err.println("Failed to update patient in CSV: " + ex.getMessage());
+                }
+                return;
+            }
+        }
+        
+        System.err.println("Patient not found for update: " + updatedPatient.getId());
+    }
+
+    // ============================================================
+    // REMOVE PATIENT + UPDATE CSV
+    // ============================================================
+    public void remove(Patient p) {
+        patients.remove(p);
+        // Also need to update CSV - add this functionality
+        updateCsvFile();
+    }
+    
+    // ============================================================
+    // REMOVE BY ID
+    // ============================================================
+    public void removeById(String id) {
+        Patient patientToRemove = null;
+        for (Patient p : patients) {
+            if (p.getId().equals(id)) {
+                patientToRemove = p;
+                break;
+            }
+        }
+        
+        if (patientToRemove != null) {
+            remove(patientToRemove);
+        }
+    }
+
+    // ============================================================
+    // GET ALL PATIENTS
+    // ============================================================
     public List<Patient> getAll() {
         return patients;
     }
 
-    public void remove(Patient p) {
-        patients.remove(p);
-    }
-
+    // ============================================================
+    // FIND BY ID
+    // ============================================================
     public Patient findById(String id) {
         for (Patient p : patients) {
             if (p.getId().equals(id)) {
@@ -113,5 +198,48 @@ public class PatientRepository {
             }
         }
         return null;
+    }
+    
+    // ============================================================
+    // PRIVATE HELPER: UPDATE CSV FILE
+    // ============================================================
+    private void updateCsvFile() {
+        try {
+            List<String[]> allData = new ArrayList<>();
+            
+            // Add header row
+            allData.add(new String[]{
+                "patient_id", "first_name", "last_name", "date_of_birth", 
+                "nhs_number", "gender", "phone_number", "email", 
+                "address", "postcode", "emergency_contact_name", 
+                "emergency_contact_phone", "registration_date", "gp_surgery_id"
+            });
+            
+            // Add all patients
+            for (Patient p : patients) {
+                allData.add(new String[]{
+                    p.getId(),
+                    p.getFirstName(),
+                    p.getLastName(),
+                    p.getDateOfBirth(),
+                    p.getNhsNumber(),
+                    p.getGender(),
+                    p.getPhoneNumber(),
+                    p.getEmail(),
+                    p.getAddress(),
+                    p.getPostcode(),
+                    p.getEmergencyContactName(),
+                    p.getEmergencyContactPhone(),
+                    p.getRegistrationDate(),
+                    p.getGpSurgeryId()
+                });
+            }
+            
+            // Write to CSV
+            CsvUtils.writeCsv(csvPath, allData);
+            
+        } catch (IOException ex) {
+            System.err.println("Failed to update CSV file: " + ex.getMessage());
+        }
     }
 }

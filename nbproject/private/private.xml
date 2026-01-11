@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/data/patients.csv</file>
-            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/view/MainFrame.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/view/PatientView.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/controller/PatientController.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/model/PatientRepository.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/model/CsvUtils.java</file>
         </group>
     </open-files>
 </project-private>
