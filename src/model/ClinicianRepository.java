@@ -13,12 +13,12 @@ public class ClinicianRepository {
         this.csvPath = csvPath;
         load();
     }
+    
     public List<String> getAllIds() {
-    List<String> ids = new ArrayList<>();
-    for (Clinician c : clinicians) ids.add(c.getId());
-    return ids;
-}
-
+        List<String> ids = new ArrayList<>();
+        for (Clinician c : clinicians) ids.add(c.getId());
+        return ids;
+    }
 
     private void load() {
         try {
@@ -74,6 +74,26 @@ public class ClinicianRepository {
             System.err.println("Failed to append clinician: " + ex.getMessage());
         }
     }
+    
+    // ============================================================
+    // NEW METHOD: UPDATE CLINICIAN + UPDATE CSV
+    // ============================================================
+    public void update(Clinician updatedClinician) {
+        // Find the clinician by ID and update their information
+        for (int i = 0; i < clinicians.size(); i++) {
+            Clinician clinician = clinicians.get(i);
+            if (clinician.getId().equals(updatedClinician.getId())) {
+                // Update the clinician in the list
+                clinicians.set(i, updatedClinician);
+                
+                // Update the CSV file - rewrite entire file
+                saveAllToCsv();
+                return;
+            }
+        }
+        
+        System.err.println("Clinician not found for update: " + updatedClinician.getId());
+    }
 
     public List<Clinician> getAll() {
         return clinicians;
@@ -84,11 +104,70 @@ public class ClinicianRepository {
     // ============================================================
     public void remove(Clinician c) {
         clinicians.remove(c);
+        // Update CSV after removal
+        saveAllToCsv();
+    }
+    
+    // ============================================================
+    // NEW METHOD: REMOVE BY ID
+    // ============================================================
+    public void removeById(String id) {
+        Clinician clinicianToRemove = null;
+        for (Clinician c : clinicians) {
+            if (c.getId().equals(id)) {
+                clinicianToRemove = c;
+                break;
+            }
+        }
+        
+        if (clinicianToRemove != null) {
+            remove(clinicianToRemove);
+        }
     }
 
     public Clinician findById(String id) {
         for (Clinician c : clinicians)
             if (c.getId().equals(id)) return c;
         return null;
+    }
+    
+    // ============================================================
+    // NEW METHOD: SAVE ALL CLINICIANS TO CSV
+    // ============================================================
+    private void saveAllToCsv() {
+        try {
+            List<String[]> allData = new ArrayList<>();
+            
+            // Add header row first (based on your CSV structure)
+            allData.add(new String[]{
+                "clinician_id", "title", "first_name", "last_name", 
+                "speciality", "gmc_number", "phone_number", "email", 
+                "workplace_id", "workplace_type", "employment_status", "start_date"
+            });
+            
+            // Add all clinicians
+            for (Clinician c : clinicians) {
+                allData.add(new String[]{
+                    c.getId(),
+                    c.getTitle(),
+                    c.getFirstName(),
+                    c.getLastName(),
+                    c.getSpeciality(),
+                    c.getGmcNumber(),
+                    c.getPhone(),
+                    c.getEmail(),
+                    c.getWorkplaceId(),
+                    c.getWorkplaceType(),
+                    c.getEmploymentStatus(),
+                    c.getStartDate()
+                });
+            }
+            
+            // Write to CSV using the writeCsv method
+            CsvUtils.writeCsv(csvPath, allData);
+            
+        } catch (IOException ex) {
+            System.err.println("Failed to save clinicians to CSV: " + ex.getMessage());
+        }
     }
 }

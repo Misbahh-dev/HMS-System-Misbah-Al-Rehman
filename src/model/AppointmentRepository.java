@@ -97,14 +97,121 @@ public class AppointmentRepository {
             System.err.println("Failed to append appointment: " + ex.getMessage());
         }
     }
+    
+    // ============================================================
+    // NEW METHOD: UPDATE APPOINTMENT + UPDATE CSV
+    // ============================================================
+    public void update(Appointment updatedAppointment) {
+        // Find the appointment by ID and update their information
+        for (int i = 0; i < appointments.size(); i++) {
+            Appointment appointment = appointments.get(i);
+            if (appointment.getId().equals(updatedAppointment.getId())) {
+                // Update the appointment in the list
+                appointments.set(i, updatedAppointment);
+                
+                // Update the CSV file - rewrite entire file
+                saveAllToCsv();
+                return;
+            }
+        }
+        
+        System.err.println("Appointment not found for update: " + updatedAppointment.getId());
+    }
 
     public void remove(Appointment a) {
         appointments.remove(a);
+        // Update CSV after removal
+        saveAllToCsv();
+    }
+    
+    // ============================================================
+    // NEW METHOD: REMOVE BY ID
+    // ============================================================
+    public void removeById(String id) {
+        Appointment appointmentToRemove = null;
+        for (Appointment a : appointments) {
+            if (a.getId().equals(id)) {
+                appointmentToRemove = a;
+                break;
+            }
+        }
+        
+        if (appointmentToRemove != null) {
+            remove(appointmentToRemove);
+        }
     }
 
     public Appointment findById(String id) {
         for (Appointment a : appointments)
             if (a.getId().equals(id)) return a;
         return null;
+    }
+    
+    // ============================================================
+    // NEW METHOD: FIND APPOINTMENTS BY PATIENT ID
+    // ============================================================
+    public List<Appointment> findByPatientId(String patientId) {
+        List<Appointment> patientAppointments = new ArrayList<>();
+        for (Appointment a : appointments) {
+            if (a.getPatientId().equals(patientId)) {
+                patientAppointments.add(a);
+            }
+        }
+        return patientAppointments;
+    }
+    
+    // ============================================================
+    // NEW METHOD: FIND APPOINTMENTS BY CLINICIAN ID
+    // ============================================================
+    public List<Appointment> findByClinicianId(String clinicianId) {
+        List<Appointment> clinicianAppointments = new ArrayList<>();
+        for (Appointment a : appointments) {
+            if (a.getClinicianId().equals(clinicianId)) {
+                clinicianAppointments.add(a);
+            }
+        }
+        return clinicianAppointments;
+    }
+    
+    // ============================================================
+    // NEW METHOD: SAVE ALL APPOINTMENTS TO CSV
+    // ============================================================
+    private void saveAllToCsv() {
+        try {
+            List<String[]> allData = new ArrayList<>();
+            
+            // Add header row first (based on your CSV structure)
+            allData.add(new String[]{
+                "appointment_id", "patient_id", "clinician_id", "facility_id",
+                "appointment_date", "appointment_time", "duration_minutes",
+                "appointment_type", "status", "reason_for_visit", "notes",
+                "created_date", "last_modified"
+            });
+            
+            // Add all appointments
+            for (Appointment a : appointments) {
+                allData.add(new String[]{
+                    a.getId(),
+                    a.getPatientId(),
+                    a.getClinicianId(),
+                    a.getFacilityId(),
+                    a.getAppointmentDate(),
+                    a.getAppointmentTime(),
+                    a.getDurationMinutes(),
+                    a.getAppointmentType(),
+                    a.getStatus(),
+                    a.getReasonForVisit(),
+                    a.getNotes(),
+                    a.getCreatedDate(),
+                    a.getLastModified()
+                });
+            }
+            
+            // Write to CSV using the writeCsv method
+            CsvUtils.writeCsv(csvPath, allData);
+            
+        } catch (IOException ex) {
+            System.err.println("Failed to save appointments to CSV: " + ex.getMessage());
+        }
     }
 }

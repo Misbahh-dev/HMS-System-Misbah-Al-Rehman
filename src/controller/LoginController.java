@@ -111,21 +111,18 @@ public class LoginController {
         }
         
         // ============================================================
-        // NEW: PASS USER ID TO CONTROLLERS FOR DATA FILTERING
+        // SETUP CONTROLLERS BASED ON USER ROLE
         // ============================================================
         if ("patient".equals(currentUserRole)) {
-            // For patients, set the current patient ID for filtering
-            patientController.setCurrentPatientId(currentUserId);
-            appointmentController.setCurrentPatientId(currentUserId);
-            prescriptionController.setCurrentPatientId(currentUserId);
-            
-            // Patients shouldn't see Referrals tab, so we don't need to filter it
+            setupPatientView();
         } else if ("clinician".equals(currentUserRole)) {
-            // For clinicians, they can see all data, no filtering needed
-            // But we could set clinician ID if needed for future features
-            clinicianController.setCurrentClinicianId(currentUserId);
+            setupClinicianView();
+        } else if ("staff".equals(currentUserRole) || "admin".equals(currentUserRole)) {
+            setupStaffView();
+        } else {
+            // Default to staff view for unknown roles
+            setupStaffView();
         }
-        // Staff and Admin see all data without filtering
         
         // Create and show MainFrame with user role
         MainFrame mainFrame = new MainFrame(
@@ -149,13 +146,64 @@ public class LoginController {
             JOptionPane.INFORMATION_MESSAGE);
     }
     
+    // ============================================================
+    // SETUP PATIENT VIEW
+    // ============================================================
+    private void setupPatientView() {
+        // For patients, filter to show only their own data
+        patientController.setCurrentPatientId(currentUserId);
+        appointmentController.setCurrentPatientId(currentUserId);
+        prescriptionController.setCurrentPatientId(currentUserId);
+        
+        // Patients typically don't need clinician or referral access
+        clinicianController.setCurrentClinicianId(null);
+    }
+    
+    // ============================================================
+    // SETUP CLINICIAN VIEW
+    // ============================================================
+    private void setupClinicianView() {
+        // For clinicians, filter to show only their related data
+        clinicianController.setCurrentClinicianId(currentUserId);
+        appointmentController.setCurrentClinicianId(currentUserId);
+        prescriptionController.setCurrentClinicianId(currentUserId);
+        
+        // KEY CHANGE: Clinicians see only THEIR PATIENTS (based on appointments)
+        patientController.setCurrentClinicianId(currentUserId);
+        
+        // Clinicians don't need referral access for now
+    }
+    
+    // ============================================================
+    // SETUP STAFF/ADMIN VIEW
+    // ============================================================
+    private void setupStaffView() {
+        // Staff/Admin see all data (no filtering)
+        patientController.setCurrentPatientId(null);
+        clinicianController.setCurrentClinicianId(null);
+        appointmentController.setCurrentPatientId(null);
+        appointmentController.setCurrentClinicianId(null);
+        prescriptionController.setCurrentPatientId(null);
+        prescriptionController.setCurrentClinicianId(null);
+    }
+    
+    // ============================================================
+    // HELPER METHOD: Clear all controllers (for logout)
+    // ============================================================
+    public void clearAllControllers() {
+        patientController.clearCurrentUser();
+        clinicianController.clearCurrentUser();
+        appointmentController.clearCurrentUser();
+        prescriptionController.clearCurrentUser();
+    }
+    
     // Describe access level based on role
     private String getAccessDescription(String role) {
         switch (role.toLowerCase()) {
             case "patient":
                 return "Can view and manage own appointments and prescriptions";
             case "clinician":
-                return "Can manage patients, appointments, prescriptions, and referrals";
+                return "Can manage assigned patients, appointments, and prescriptions";
             case "staff":
                 return "Full administrative access to all modules";
             case "admin":
@@ -166,7 +214,7 @@ public class LoginController {
     }
     
     // ============================================================
-    // NEW: GETTER FOR CURRENT USER ID
+    // GETTER FOR CURRENT USER ID
     // ============================================================
     public String getCurrentUserId() {
         return currentUserId;
@@ -190,12 +238,19 @@ public class LoginController {
         return currentUser; 
     }
     
-    // Optional: Method to logout (if you add logout functionality later)
+    // ============================================================
+    // LOGOUT METHOD
+    // ============================================================
     public void logout() {
         isAuthenticated = false;
         currentUserRole = null;
         currentUser = null;
-        currentUserId = null; // Clear userId on logout
+        currentUserId = null;
+        
+        // Clear all controller states
+        clearAllControllers();
+        
+        // Clear view fields
         view.clearFields();
         view.showMessage("Logged out successfully.", false);
     }

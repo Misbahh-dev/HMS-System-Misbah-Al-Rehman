@@ -64,6 +64,7 @@ public class MainFrame extends JFrame {
                 tabs.addTab("Appointments", ac.getView());
                 tabs.addTab("Prescriptions", prc.getView());
                 tabs.addTab("Referrals", rc.getView());
+                tabs.addTab("My Profile", cc.getView());
                 break;
                 
             case "staff":

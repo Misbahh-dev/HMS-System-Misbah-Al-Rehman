@@ -215,6 +215,11 @@ public class PatientView extends JPanel {
         txtRegistrationDate.setEditable(!readOnly);
         txtGpSurgery.setEditable(!readOnly);
     }
+    public void hideAllButtons() {
+    if (btnAdd != null) btnAdd.setVisible(false);
+    if (btnUpdate != null) btnUpdate.setVisible(false);
+    if (btnDelete != null) btnDelete.setVisible(false);
+}
     
     public void hideAddDeleteButtons() {
         btnAdd.setVisible(false);

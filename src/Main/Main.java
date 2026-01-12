@@ -64,7 +64,7 @@ public class Main {
             // ================================
             // CONTROLLERS (MATCHING YOUR CONSTRUCTORS)
             // ================================
-            PatientController pc = new PatientController(pr, pv);
+            PatientController pc = new PatientController(pr, ar, pv);
 
             ClinicianController cc = new ClinicianController(cr, cv);
 

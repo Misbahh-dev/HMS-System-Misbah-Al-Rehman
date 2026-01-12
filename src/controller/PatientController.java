@@ -2,43 +2,51 @@ package controller;
 
 import model.Patient;
 import model.PatientRepository;
+import model.AppointmentRepository; // ADDED: Import AppointmentRepository
 import view.PatientView;
 import java.util.List;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 public class PatientController {
 
     private final PatientRepository repository;
+    private final AppointmentRepository appointmentRepo; // ADDED: For clinician-patient relationships
     private final PatientView view;
-    private String currentPatientId; // For filtering patient data
+    private String currentPatientId; // For filtering patient data by patient
+    private String currentClinicianId; // ADDED: For filtering patients by clinician
 
-    public PatientController(PatientRepository repository, PatientView view) {
+    public PatientController(PatientRepository repository, AppointmentRepository appointmentRepo, PatientView view) { // MODIFIED: Added appointmentRepo
         this.repository = repository;
+        this.appointmentRepo = appointmentRepo; // ADDED: Store appointment repository
         this.view = view;
         this.view.setController(this);
-        this.view.setNextId(repository.generateNewId()); // Set initial next ID
-        setupForUserRole(); // Initialize based on user role
-    }
-    
-    // ============================================================
-    // NEW METHOD: Setup based on user role
-    // ============================================================
-    private void setupForUserRole() {
-        // Initially assume patient view (most restrictive)
-        // This will be updated when setCurrentPatientId is called
+        // Start with all buttons hidden and read-only
         view.setReadOnlyMode(true);
-        view.hideAddDeleteButtons();
-        view.showUpdateButton();
-        view.setTitle("My Profile");
-        
+        view.hideAllButtons();
+        view.setTitle("Patient Management - Please Login");
         refreshView();
     }
     
     // ============================================================
-    // Set current patient ID for filtering
+    // Method to set user role (called by LoginController)
+    // ============================================================
+    public void setUserRole(String userRole, String userId) {
+        if ("PATIENT".equals(userRole)) {
+            setCurrentPatientId(userId); // Patient sees only their data
+        } else if ("CLINICIAN".equals(userRole)) {
+            setCurrentClinicianId(userId); // ADDED: Clinician sees their patients
+        } else {
+            setCurrentPatientId(null); // Staff/Admin sees all data
+        }
+    }
+    
+    // ============================================================
+    // Set current patient ID for filtering (for patients)
     // ============================================================
     public void setCurrentPatientId(String patientId) {
         this.currentPatientId = patientId;
+        this.currentClinicianId = null; // Clear clinician ID when setting patient ID
         
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
             // PATIENT VIEW: Read-only mode except for own updates
@@ -49,11 +57,37 @@ public class PatientController {
         } else {
             // CLINICIAN/STAFF/ADMIN VIEW: Full access
             view.setReadOnlyMode(false);
-            view.showAllButtons();
+            view.showAllButtons(); // This should show Add, Update, and Delete
             view.setTitle("Patient Management");
+            view.setNextId(repository.generateNewId()); // Set next ID for adding
         }
         
         refreshView(); // Refresh to show filtered data
+    }
+    
+    // ============================================================
+    // NEW METHOD: Set current clinician ID for filtering (for clinicians)
+    // ============================================================
+    public void setCurrentClinicianId(String clinicianId) {
+        this.currentClinicianId = clinicianId;
+        this.currentPatientId = null; // Clear patient ID when setting clinician ID
+        
+        // CLINICIAN VIEW: Can see and manage their assigned patients
+        view.setReadOnlyMode(false);
+        view.showAllButtons(); // Clinicians can manage their patients
+        view.setTitle("My Patients");
+        view.setNextId(repository.generateNewId()); // Set next ID for adding
+        
+        refreshView(); // Refresh to show filtered data
+    }
+    
+    // ============================================================
+    // Method for staff/admin to view all patients
+    // ============================================================
+    public void setStaffView() {
+        this.currentPatientId = null;
+        this.currentClinicianId = null;
+        refreshView();
     }
     
     public PatientView getView() {
@@ -61,21 +95,23 @@ public class PatientController {
     }
 
     // ============================================================
-    // Show only current patient if ID is set
-    // Otherwise show all patients (for clinicians/staff/admin)
+    // Show filtered patients based on user role
     // ============================================================
     public void refreshView() {
         List<Patient> patientsToShow;
         
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Show only the current patient's data
+            // PATIENT VIEW: Show only the current patient's data
             Patient currentPatient = repository.findById(currentPatientId);
             patientsToShow = new ArrayList<>();
             if (currentPatient != null) {
                 patientsToShow.add(currentPatient);
             }
+        } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
+            // CLINICIAN VIEW: Show patients assigned to this clinician via appointments
+            patientsToShow = repository.findByClinicianId(currentClinicianId, appointmentRepo);
         } else {
-            // Show all patients (for clinicians, staff, admin)
+            // STAFF/ADMIN VIEW: Show all patients
             patientsToShow = repository.getAll();
         }
         
@@ -88,7 +124,10 @@ public class PatientController {
     public void addPatient(Patient p) {
         // If a patient is logged in, they shouldn't be able to add new patients
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patients can only view/update their own profile, not add new patients
+            JOptionPane.showMessageDialog(view, 
+                "Patients cannot add new patient records.", 
+                "Access Denied", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -96,6 +135,11 @@ public class PatientController {
         repository.addAndAppend(p);
         refreshView();
         view.setNextId(repository.generateNewId()); // Update next ID
+        
+        JOptionPane.showMessageDialog(view, 
+            "Patient added successfully!", 
+            "Success", 
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     // ============================================================
@@ -106,7 +150,10 @@ public class PatientController {
         Patient original = repository.findById(p.getId());
         
         if (original == null) {
-            // Patient not found
+            JOptionPane.showMessageDialog(view, 
+                "Patient not found.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         
@@ -114,16 +161,27 @@ public class PatientController {
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
             // PATIENT: Can only update their own record
             if (!p.getId().equals(currentPatientId)) {
-                // Patients can only update their own profile
+                JOptionPane.showMessageDialog(view, 
+                    "You can only update your own profile.", 
+                    "Access Denied", 
+                    JOptionPane.WARNING_MESSAGE);
                 return;
             }
             
             // Patients can update their own info
             repository.update(p);
+            JOptionPane.showMessageDialog(view, 
+                "Your profile has been updated!", 
+                "Success", 
+                JOptionPane.INFORMATION_MESSAGE);
             
         } else {
-            // STAFF/ADMIN/CLINICIAN: Can update any patient
+            // CLINICIAN/STAFF/ADMIN: Can update any patient
             repository.update(p);
+            JOptionPane.showMessageDialog(view, 
+                "Patient updated successfully!", 
+                "Success", 
+                JOptionPane.INFORMATION_MESSAGE);
         }
         
         refreshView();
@@ -135,7 +193,10 @@ public class PatientController {
     public void deletePatient(Patient p) {
         // If a patient is logged in, they shouldn't be able to delete any patients
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patients cannot delete profiles
+            JOptionPane.showMessageDialog(view, 
+                "Patients cannot delete patient records.", 
+                "Access Denied", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -143,10 +204,25 @@ public class PatientController {
         repository.remove(p);
         refreshView();
         view.setNextId(repository.generateNewId()); // Update next ID
+        
+        JOptionPane.showMessageDialog(view, 
+            "Patient deleted successfully!", 
+            "Success", 
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     public Patient findById(String id) {
         return repository.findById(id);
+    }
+    
+    // ============================================================
+    // Delete by ID
+    // ============================================================
+    public void deleteById(String id) {
+        Patient patient = repository.findById(id);
+        if (patient != null) {
+            deletePatient(patient);
+        }
     }
     
     // ============================================================
@@ -160,34 +236,44 @@ public class PatientController {
     }
     
     // ============================================================
-    // NEW METHOD: Delete by ID
-    // ============================================================
-    public void deleteById(String id) {
-        Patient patient = repository.findById(id);
-        if (patient != null) {
-            deletePatient(patient);
-        }
-    }
-    
-    // ============================================================
-    // NEW METHOD: Get current patient ID
+    // Get current patient ID
     // ============================================================
     public String getCurrentPatientId() {
         return currentPatientId;
     }
     
     // ============================================================
-    // NEW METHOD: Check if current user is a patient
+    // NEW METHOD: Get current clinician ID
+    // ============================================================
+    public String getCurrentClinicianId() {
+        return currentClinicianId;
+    }
+    
+    // ============================================================
+    // Check if current user is a patient
     // ============================================================
     public boolean isPatientView() {
         return currentPatientId != null && !currentPatientId.isEmpty();
     }
     
     // ============================================================
-    // NEW METHOD: Clear current patient ID (for logout)
+    // NEW METHOD: Check if current user is a clinician
     // ============================================================
-    public void clearCurrentPatient() {
+    public boolean isClinicianView() {
+        return currentClinicianId != null && !currentClinicianId.isEmpty();
+    }
+    
+    // ============================================================
+    // Clear current user (for logout)
+    // ============================================================
+    public void clearCurrentUser() {
         this.currentPatientId = null;
-        setupForUserRole(); // Reset to default state
+        this.currentClinicianId = null; // ADDED: Clear clinician ID too
+        // Reset to default state
+        view.setReadOnlyMode(true);
+        view.hideAllButtons();
+        view.setTitle("Patient Management - Please Login");
+        view.setNextId("");
+        refreshView();
     }
 }

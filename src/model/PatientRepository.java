@@ -2,7 +2,9 @@ package model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PatientRepository {
 
@@ -198,6 +200,32 @@ public class PatientRepository {
             }
         }
         return null;
+    }
+    
+    // ============================================================
+    // NEW METHOD: FIND PATIENTS BY CLINICIAN ID USING APPOINTMENTS
+    // ============================================================
+    public List<Patient> findByClinicianId(String clinicianId, AppointmentRepository appointmentRepo) {
+        List<Patient> clinicianPatients = new ArrayList<>();
+        
+        // First, get all appointments for this clinician
+        List<Appointment> clinicianAppointments = appointmentRepo.findByClinicianId(clinicianId);
+        
+        // Then, get unique patient IDs from those appointments
+        Set<String> patientIds = new HashSet<>();
+        for (Appointment a : clinicianAppointments) {
+            patientIds.add(a.getPatientId());
+        }
+        
+        // Finally, find those patients
+        for (String patientId : patientIds) {
+            Patient patient = findById(patientId);
+            if (patient != null) {
+                clinicianPatients.add(patient);
+            }
+        }
+        
+        return clinicianPatients;
     }
     
     // ============================================================
