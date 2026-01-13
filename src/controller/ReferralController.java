@@ -14,6 +14,9 @@ public class ReferralController {
     private final FacilityRepository facilityRepo;
     private final AppointmentRepository appointmentRepo;
     private final ReferralView view;
+    
+    // NEW FIELD: Current clinician ID for filtering
+    private String currentClinicianId;
 
     public ReferralController(ReferralManager rm,
                               PatientRepository pr,
@@ -28,6 +31,7 @@ public class ReferralController {
         this.facilityRepo = fr;
         this.appointmentRepo = ar;
         this.view = view;
+        this.currentClinicianId = null; // Initialize as null
 
         // hook controller into view
         this.view.setController(this);
@@ -42,8 +46,53 @@ public class ReferralController {
         return view;
     }
 
+    // MODIFIED: Added overloaded refresh method with clinician filter
+    public void refreshReferrals(String clinicianId) {
+        if (clinicianId != null && !clinicianId.isEmpty()) {
+            // Show filtered referrals for this clinician
+            view.showReferrals(getReferralsForClinician(clinicianId));
+        } else {
+            // Staff/Admin sees all referrals
+            view.showReferrals(referralManager.getAllReferrals());
+        }
+    }
+
+    // NEW: Overload for backward compatibility
     public void refreshReferrals() {
-        view.showReferrals(referralManager.getAllReferrals());
+        refreshReferrals(null);
+    }
+
+    // ---------------------------------------------
+    // NEW: Filter referrals for a specific clinician
+    // ---------------------------------------------
+    public List<Referral> getReferralsForClinician(String clinicianId) {
+        List<Referral> filtered = new ArrayList<>();
+        for (Referral r : referralManager.getAllReferrals()) {
+            // Check if clinician appears in either "from clin" OR "to clin"
+            if (clinicianId.equals(r.getReferringClinicianId()) || 
+                clinicianId.equals(r.getReferredToClinicianId())) {
+                filtered.add(r);
+            }
+        }
+        return filtered;
+    }
+
+    // ---------------------------------------------
+    // NEW: Getter and Setter for current clinician ID
+    // ---------------------------------------------
+    public void setCurrentClinicianId(String clinicianId) {
+        this.currentClinicianId = clinicianId;
+        refreshReferrals(clinicianId);  // Refresh with filter
+    }
+    
+    public String getCurrentClinicianId() {
+        return currentClinicianId;
+    }
+    
+    // NEW: Clear current user (for logout)
+    public void clearCurrentUser() {
+        this.currentClinicianId = null;
+        refreshReferrals(null);  // Show all referrals when logged out
     }
 
     // ---------------------------------------------

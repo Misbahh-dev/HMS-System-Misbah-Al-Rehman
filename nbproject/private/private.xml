@@ -2,6 +2,13 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/controller/ReferralController.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/view/ReferralView.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/model/ReferralManager.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/model/ReferralRepository.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/controller/LoginController.java</file>
+            <file>file:/C:/Users/MISBAH/Desktop/HMS/HMS-Misbah/src/data/clinicians.csv</file>
+        </group>
     </open-files>
 </project-private>

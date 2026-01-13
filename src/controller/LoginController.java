@@ -168,10 +168,11 @@ public class LoginController {
         appointmentController.setCurrentClinicianId(currentUserId);
         prescriptionController.setCurrentClinicianId(currentUserId);
         
-        // KEY CHANGE: Clinicians see only THEIR PATIENTS (based on appointments)
-        patientController.setCurrentClinicianId(currentUserId);
+        // KEY: Set current clinician ID in referral controller
+        referralController.setCurrentClinicianId(currentUserId);  // ADD THIS LINE
         
-        // Clinicians don't need referral access for now
+        // Clinicians see only THEIR PATIENTS (based on appointments)
+        patientController.setCurrentClinicianId(currentUserId);
     }
     
     // ============================================================
@@ -195,6 +196,7 @@ public class LoginController {
         clinicianController.clearCurrentUser();
         appointmentController.clearCurrentUser();
         prescriptionController.clearCurrentUser();
+        referralController.clearCurrentUser();  // ADD THIS LINE
     }
     
     // Describe access level based on role
