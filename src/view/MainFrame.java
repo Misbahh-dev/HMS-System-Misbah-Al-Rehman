@@ -13,6 +13,7 @@ public class MainFrame extends JFrame {
             AppointmentController ac,
             PrescriptionController prc,
             ReferralController rc,
+            StaffController sc,
             String userRole) {
 
         super("Healthcare Management System - Logged in as: " + userRole);
@@ -22,7 +23,7 @@ public class MainFrame extends JFrame {
         // ============================================================
         // CHANGE: ADD TABS BASED ON USER ROLE (HIDE OTHERS)
         // ============================================================
-        addTabsBasedOnRole(pc, cc, ac, prc, rc, userRole);
+        addTabsBasedOnRole(pc, cc, ac, prc, rc, sc, userRole);
         
         setContentPane(tabs);
         setSize(1200, 700);
@@ -42,6 +43,7 @@ public class MainFrame extends JFrame {
             AppointmentController ac,
             PrescriptionController prc,
             ReferralController rc,
+            StaffController sc,
             String userRole) {
         
         if (userRole == null) {
@@ -68,6 +70,15 @@ public class MainFrame extends JFrame {
                 break;
                 
             case "staff":
+                tabs.addTab("Patients", pc.getView());
+                tabs.addTab("Clinicians", cc.getView());
+                tabs.addTab("Appointments", ac.getView());
+                tabs.addTab("Prescriptions", prc.getView());
+                tabs.addTab("Referrals", rc.getView());
+                tabs.addTab("My Profile", sc.getView());
+                break;
+                
+                
             case "admin":
                 // Staff and Admin can see everything
                 tabs.addTab("Patients", pc.getView());
@@ -75,6 +86,7 @@ public class MainFrame extends JFrame {
                 tabs.addTab("Appointments", ac.getView());
                 tabs.addTab("Prescriptions", prc.getView());
                 tabs.addTab("Referrals", rc.getView());
+                tabs.addTab("Staff", sc.getView());
                 break;
                 
             default:

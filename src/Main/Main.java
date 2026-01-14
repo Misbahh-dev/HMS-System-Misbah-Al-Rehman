@@ -56,6 +56,7 @@ public class Main {
             AppointmentView av = new AppointmentView();
             PrescriptionView presV = new PrescriptionView();
             ReferralView rv = new ReferralView();
+            StaffView sv = new StaffView();
             //==============================
             // LOGIN VIEW - ADDED
             //==============================
@@ -67,6 +68,8 @@ public class Main {
             PatientController pc = new PatientController(pr, ar, pv);
 
             ClinicianController cc = new ClinicianController(cr, cv);
+            
+            StaffController sc = new StaffController(sR, sv); 
 
             AppointmentController ac = new AppointmentController(
                     ar,   // AppointmentRepository
@@ -93,6 +96,7 @@ public class Main {
                     rv    // ReferralView
             );
             
+            
             //============================
             // LOGIN CONTROLLER - ADDED
             //===========================
@@ -105,7 +109,7 @@ public class Main {
             // CHANGE 1: SET MAIN CONTROLLERS FOR LOGIN CONTROLLER
             // This allows LoginController to open MainFrame after login
             // ============================================================
-            lc.setMainControllers(pc, cc, ac, prc, rc);
+            lc.setMainControllers(pc, cc, ac, prc, rc, sc);
 
             // ============================================================
             // CHANGE 2: CREATE LOGIN WINDOW INSTEAD OF DIRECT MAINFRAME

@@ -20,7 +20,8 @@ public class LoginController {
     private AppointmentController appointmentController;
     private PrescriptionController prescriptionController;
     private ReferralController referralController;
-
+    private StaffController staffController;   
+    
     public LoginController(LoginView view, LoginRepository repository) {
         this.view = view;
         this.repository = repository;
@@ -33,13 +34,15 @@ public class LoginController {
             ClinicianController cc,
             AppointmentController ac,
             PrescriptionController prc,
-            ReferralController rc) {
+            ReferralController rc,
+            StaffController sc) {
         
         this.patientController = pc;
         this.clinicianController = cc;
         this.appointmentController = ac;
         this.prescriptionController = prc;
         this.referralController = rc;
+        this.staffController = sc;
     }
 
     private void initController() {
@@ -101,7 +104,7 @@ public class LoginController {
     private void openMainApplication() {
         if (patientController == null || clinicianController == null || 
             appointmentController == null || prescriptionController == null || 
-            referralController == null) {
+            referralController == null ||staffController == null) {
             
             JOptionPane.showMessageDialog(null,
                 "Error: Main controllers not set up properly.",
@@ -114,16 +117,15 @@ public class LoginController {
         // SETUP CONTROLLERS BASED ON USER ROLE
         // ============================================================
         if ("patient".equals(currentUserRole)) {
-            setupPatientView();
-        } else if ("clinician".equals(currentUserRole)) {
-            setupClinicianView();
-        } else if ("staff".equals(currentUserRole) || "admin".equals(currentUserRole)) {
-            setupStaffView();
-        } else {
-            // Default to staff view for unknown roles
-            setupStaffView();
-        }
-        
+        setupPatientView();
+    } else if ("clinician".equals(currentUserRole)) {
+        setupClinicianView();
+    } else if ("staff".equals(currentUserRole) || "admin".equals(currentUserRole)) {
+        setupStaffView(); // This now calls staffController.setUserRole()
+    } else {
+        // Default to staff view for unknown roles
+        setupStaffView();
+    }
         // Create and show MainFrame with user role
         MainFrame mainFrame = new MainFrame(
             patientController,
@@ -131,6 +133,7 @@ public class LoginController {
             appointmentController,
             prescriptionController,
             referralController,
+            staffController,    
             currentUserRole  // Pass user role for access control
         );
         
@@ -186,6 +189,7 @@ public class LoginController {
         appointmentController.setCurrentClinicianId(null);
         prescriptionController.setCurrentPatientId(null);
         prescriptionController.setCurrentClinicianId(null);
+         staffController.setUserRole(currentUserRole, currentUserId);
     }
     
     // ============================================================
@@ -196,7 +200,8 @@ public class LoginController {
         clinicianController.clearCurrentUser();
         appointmentController.clearCurrentUser();
         prescriptionController.clearCurrentUser();
-        referralController.clearCurrentUser();  // ADD THIS LINE
+        referralController.clearCurrentUser(); 
+        staffController.clearCurrentUser();// ADD THIS LINE
     }
     
     // Describe access level based on role
