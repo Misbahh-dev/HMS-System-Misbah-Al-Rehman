@@ -1,4 +1,4 @@
-staff_id,first_name,last_name,role,department,facility_id,phone_number,email,employment_status,start_date,line_manager,access_level 
+staff_id,first_name,last_name,role,department,facility_id,phone_number,email,employment_status,start_date,line_manager,access_level
 
 ST001,Michelle,Adams,Practice Manager,Administration,S001,07111333444,m.adams@birminghamgp.nhs.uk,Full-time,2019-03-01,Dr. David Thompson,Manager
 ST002,James,Wilson,Receptionist,Front Desk,S001,07111333445,j.wilson@birminghamgp.nhs.uk,Part-time,2020-07-15,Michelle Adams,Basic

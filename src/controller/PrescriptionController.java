@@ -23,7 +23,7 @@ public class PrescriptionController {
     private final PrescriptionView view;
     private String currentPatientId; // For filtering prescriptions by patient
     private String currentClinicianId; // For filtering prescriptions by clinician
-
+    private String currentStaffId;
     public PrescriptionController(PrescriptionRepository repository,
                                   PatientRepository patientRepository,
                                   ClinicianRepository clinicianRepository,
@@ -101,6 +101,42 @@ public class PrescriptionController {
         
         refreshView(); // Refresh to show filtered data
     }
+    
+    // ============================================================
+    // NEW: Set current staff ID for filtering (for staff)
+    // ============================================================
+    public void setCurrentStaffId(String staffId) {
+        this.currentPatientId = null;
+        this.currentClinicianId = null;
+        this.currentStaffId = staffId;
+// Clear patient and clinician IDs
+        
+        // STAFF VIEW: Can view all prescriptions
+        view.setReadOnlyMode(true);
+        view.hideAddUpdateButtons();
+        view.setTitle("All Prescriptions");
+        
+        refreshView(); // Refresh to show filtered data
+        
+        // Update dropdowns with full access
+        view.populateDropdowns(
+                getPatientIds(),
+                getClinicianIds(),
+                repository.getMedicationOptions(),
+                repository.getPharmacyOptions(),
+                getAppointmentIds()
+        );
+    }
+    
+    // ============================================================
+    // NEW: Method for staff to view all prescriptions (admin view)
+    // ============================================================
+    public void setStaffView() {
+        this.currentPatientId = null;
+        this.currentClinicianId = null;
+         this.currentStaffId = null;
+        refreshView();
+    }
 
     public PrescriptionView getView() {
         return view;
@@ -109,32 +145,45 @@ public class PrescriptionController {
     // ============================================================
     // Show filtered prescriptions based on user role
     // ============================================================
-    public void refreshView() {
-        List<Prescription> prescriptionsToShow;
+  public void refreshView() {
+    List<Prescription> prescriptionsToShow;
+    
+    if (currentPatientId != null && !currentPatientId.isEmpty()) {
+        // Patient view: Show only this patient's prescriptions
+        prescriptionsToShow = getPrescriptionsForPatient(currentPatientId);
+        view.setReadOnlyMode(true);
+        view.hideAddUpdateButtons();
+        view.setTitle("My Prescriptions (View Only)");
         
-        if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient view: Show only this patient's prescriptions
-            prescriptionsToShow = getPrescriptionsForPatient(currentPatientId);
-            
-        } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician view: Show prescriptions issued by this clinician
-            prescriptionsToShow = getPrescriptionsByClinician(currentClinicianId);
-            
-        } else {
-            // Staff/Admin view: Show all prescriptions
-            prescriptionsToShow = repository.getAll();
-            view.setReadOnlyMode(false);
-            view.showAddUpdateButtons();
-            view.setTitle("All Prescriptions");
-        }
+    } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
+        // Clinician view: Show prescriptions issued by this clinician
+        prescriptionsToShow = getPrescriptionsByClinician(currentClinicianId);
+        view.setReadOnlyMode(false);
+        view.showAddUpdateButtons();
+        view.setTitle("Manage Prescriptions");
         
-        view.showPrescriptions(prescriptionsToShow);
+    } else if (currentStaffId != null && !currentStaffId.isEmpty()) {
+        // STAFF view: Show all prescriptions (READ-ONLY)
+        prescriptionsToShow = repository.getAll();
+        view.setReadOnlyMode(true);
+        view.hideAddUpdateButtons();
+        view.setTitle("All Prescriptions (View Only)");
         
-        // Only generate new ID for clinicians/staff/admin (not for patients)
-        if (currentPatientId == null || currentPatientId.isEmpty()) {
-            view.setNextId(repository.generateNewId());
-        }
+    } else {
+        // ADMIN view: Show all prescriptions (EDITABLE)
+        prescriptionsToShow = repository.getAll();
+        view.setReadOnlyMode(false);
+        view.showAddUpdateButtons();
+        view.setTitle("All Prescriptions");
     }
+    
+    view.showPrescriptions(prescriptionsToShow);
+    
+    // Only generate new ID for clinicians/staff/admin (not for patients)
+    if (currentPatientId == null || currentPatientId.isEmpty()) {
+        view.setNextId(repository.generateNewId());
+    }
+}
 
     // ============================================================
     // Filter patient IDs based on user role
@@ -321,6 +370,7 @@ public class PrescriptionController {
         refreshView();
     }
 
+   
     // ============================================================
     // DELETE PRESCRIPTION - PATIENTS CANNOT DELETE
     // ============================================================
@@ -437,5 +487,12 @@ public class PrescriptionController {
     // ============================================================
     public boolean isClinicianView() {
         return currentClinicianId != null && !currentClinicianId.isEmpty();
+    }
+    
+    // ============================================================
+    // NEW: Check if current user is staff/admin
+    // ============================================================
+    public boolean isStaffView() {
+        return currentPatientId == null && currentClinicianId == null;
     }
 }

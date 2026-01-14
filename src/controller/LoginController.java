@@ -116,16 +116,18 @@ public class LoginController {
         // ============================================================
         // SETUP CONTROLLERS BASED ON USER ROLE
         // ============================================================
-        if ("patient".equals(currentUserRole)) {
-        setupPatientView();
-    } else if ("clinician".equals(currentUserRole)) {
-        setupClinicianView();
-    } else if ("staff".equals(currentUserRole) || "admin".equals(currentUserRole)) {
-        setupStaffView(); // This now calls staffController.setUserRole()
-    } else {
-        // Default to staff view for unknown roles
-        setupStaffView();
-    }
+  if ("patient".equals(currentUserRole)) {
+    setupPatientView();
+} else if ("clinician".equals(currentUserRole)) {
+    setupClinicianView();
+} else if ("staff".equals(currentUserRole)) {
+    setupStaffView(); // Regular staff (read-only)
+} else if ("admin".equals(currentUserRole)) {
+    setupAdminView(); // Admin (full edit access)
+} else {
+    // Default to staff view for unknown roles
+    setupStaffView();
+}
         // Create and show MainFrame with user role
         MainFrame mainFrame = new MainFrame(
             patientController,
@@ -187,10 +189,22 @@ public class LoginController {
         clinicianController.setCurrentClinicianId(null);
         appointmentController.setCurrentPatientId(null);
         appointmentController.setCurrentClinicianId(null);
-        prescriptionController.setCurrentPatientId(null);
-        prescriptionController.setCurrentClinicianId(null);
-         staffController.setUserRole(currentUserRole, currentUserId);
+       prescriptionController.setCurrentStaffId(currentUserId);  // Shows ALL prescriptions
+        referralController.setCurrentStaffId(currentUserId);      // Shows ALL referrals
+        staffController.setCurrentStaffId(currentUserId);
+        
     }
+    
+    private void setupAdminView (){
+         patientController.setCurrentPatientId(null);
+        clinicianController.setCurrentClinicianId(null);
+        appointmentController.setCurrentPatientId(null);
+        appointmentController.setCurrentClinicianId(null);
+        prescriptionController.setStaffView();        // Admin sees ALL prescriptions (editable)
+        referralController.setStaffView();           // Admin sees ALL referrals (editable)
+    staffController.setStaffView();              
+    }
+    
     
     // ============================================================
     // HELPER METHOD: Clear all controllers (for logout)

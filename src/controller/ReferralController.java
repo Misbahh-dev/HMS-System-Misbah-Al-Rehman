@@ -89,10 +89,36 @@ public class ReferralController {
         return currentClinicianId;
     }
     
+    // ============================================================
+    // NEW: Set current staff ID for filtering (for staff)
+    // ============================================================
+    public void setCurrentStaffId(String staffId) {
+        this.currentClinicianId = null; // Clear clinician ID
+        view.setReadOnlyMode(true);
+        // STAFF VIEW: Can view all referrals
+        refreshReferrals(null); // Show all referrals (no filtering)
+    }
+    
+    // ============================================================
+    // NEW: Method for staff to view all referrals (admin view)
+    // ============================================================
+    public void setStaffView() {
+        this.currentClinicianId = null;
+         view.setReadOnlyMode(false);
+        refreshReferrals(null); // Show all referrals
+    }
+    
     // NEW: Clear current user (for logout)
     public void clearCurrentUser() {
         this.currentClinicianId = null;
         refreshReferrals(null);  // Show all referrals when logged out
+    }
+    
+    // ============================================================
+    // NEW: Check if current user is staff/admin
+    // ============================================================
+    public boolean isStaffView() {
+        return currentClinicianId == null;
     }
 
     // ---------------------------------------------
