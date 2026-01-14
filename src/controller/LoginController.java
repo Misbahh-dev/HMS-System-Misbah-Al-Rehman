@@ -202,7 +202,7 @@ public class LoginController {
         appointmentController.setCurrentClinicianId(null);
         prescriptionController.setStaffView();        // Admin sees ALL prescriptions (editable)
         referralController.setStaffView();           // Admin sees ALL referrals (editable)
-    staffController.setStaffView();              
+    staffController.setAdminView();              
     }
     
     

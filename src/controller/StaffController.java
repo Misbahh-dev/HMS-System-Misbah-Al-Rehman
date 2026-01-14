@@ -59,6 +59,17 @@ public class StaffController {
     public StaffView getView() {
         return view;
     }
+       public void setAdminView() {
+        this.currentStaffId = null; // Clear staff ID for admin
+        
+        // CHANGE FOR ADMIN MADE: Set up view for admin (full access)
+        view.setReadOnlyMode(false);
+        view.showAllButtons(); // Admin can add/update/delete all staff
+        view.setTitle("Staff Management (Admin Mode)");
+        view.setNextId(repository.generateNewId()); // Set next ID for adding
+        
+        refreshView(); // Show all staff
+    }
 
     // ============================================================
     // Show filtered staff based on user role
