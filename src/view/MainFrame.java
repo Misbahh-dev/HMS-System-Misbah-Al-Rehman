@@ -6,6 +6,7 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
     private JTabbedPane tabs;
+    private String userRole; // Store user role
     
     public MainFrame(
             PatientController pc,
@@ -16,22 +17,82 @@ public class MainFrame extends JFrame {
             StaffController sc,
             String userRole) {
 
-        super("Healthcare Management System - Logged in as: " + userRole);
+        super("Healthcare Management System");
+        this.userRole = userRole;
 
-        tabs = new JTabbedPane();
+        // ============================================================
+        // CREATE MAIN PANEL WITH BORDERLAYOUT
+        // ============================================================
+        JPanel mainPanel = new JPanel(new BorderLayout());
         
         // ============================================================
-        // CHANGE: ADD TABS BASED ON USER ROLE (HIDE OTHERS)
+        // TOP PANEL WITH TITLE AND LOGOUT BUTTON
         // ============================================================
+        JPanel topPanel = new JPanel(new BorderLayout(10, 10));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        topPanel.setBackground(new Color(240, 240, 240));
+        
+        // Title on left
+        JLabel titleLabel = new JLabel("HMS - " + userRole.toUpperCase() + " Portal");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(new Color(0, 102, 204));
+        topPanel.add(titleLabel, BorderLayout.WEST);
+        
+        // Logout button on right
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.setBackground(new Color(220, 53, 69));
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setFocusPainted(false);
+        logoutButton.addActionListener(e -> performLogout());
+        topPanel.add(logoutButton, BorderLayout.EAST);
+        
+        // ============================================================
+        // TABBED PANEL
+        // ============================================================
+        tabs = new JTabbedPane();
         addTabsBasedOnRole(pc, cc, ac, prc, rc, sc, userRole);
         
-        setContentPane(tabs);
+        // ============================================================
+        // ASSEMBLE MAIN PANEL
+        // ============================================================
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(tabs, BorderLayout.CENTER);
+        
+        // ============================================================
+        // SET CONTENT AND WINDOW PROPERTIES
+        // ============================================================
+        setContentPane(mainPanel);
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
         // Show access message
         showAccessMessage(userRole);
+    }
+    
+    // ============================================================
+    // LOGOUT METHOD
+    // ============================================================
+    private void performLogout() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to logout?\n\n" +
+            "User: " + userRole.toUpperCase(),
+            "Confirm Logout",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose(); // Close current window
+            
+            // Show logout message
+            JOptionPane.showMessageDialog(null,
+                "You have been logged out successfully.\n",
+                "Logout Complete",
+                JOptionPane.INFORMATION_MESSAGE);
+            
+            // Exit application (simplest for now)
+            System.exit(0);
+        }
     }
     
     // ============================================================
@@ -78,7 +139,6 @@ public class MainFrame extends JFrame {
                 tabs.addTab("My Profile", sc.getView());
                 break;
                 
-                
             case "admin":
                 // Staff and Admin can see everything
                 tabs.addTab("Patients", pc.getView());
@@ -116,7 +176,7 @@ public class MainFrame extends JFrame {
                 message = "Clinician Access: You can manage patients, appointments, prescriptions, and referrals.";
                 break;
             case "staff":
-                message = "Staff Access: Full administrative access to all modules.";
+                message = "Staff Access: Access to view all modules.";
                 break;
             case "admin":
                 message = "Admin Access: Full system administrator privileges.";

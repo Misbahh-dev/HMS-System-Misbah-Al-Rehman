@@ -263,17 +263,4 @@ public class PatientController {
         return currentClinicianId != null && !currentClinicianId.isEmpty();
     }
     
-    // ============================================================
-    // Clear current user (for logout)
-    // ============================================================
-    public void clearCurrentUser() {
-        this.currentPatientId = null;
-        this.currentClinicianId = null; // ADDED: Clear clinician ID too
-        // Reset to default state
-        view.setReadOnlyMode(true);
-        view.hideAllButtons();
-        view.setTitle("Patient Management - Please Login");
-        view.setNextId("");
-        refreshView();
-    }
 }

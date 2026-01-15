@@ -453,15 +453,6 @@ public class PrescriptionController {
     }
     
     // ============================================================
-    // Clear current user IDs (for logout)
-    // ============================================================
-    public void clearCurrentUser() {
-        this.currentPatientId = null;
-        this.currentClinicianId = null;
-        setupForUserRole(); // Reset to default state
-    }
-    
-    // ============================================================
     // Get medication history for patient
     // ============================================================
     public List<String> getMedicationHistoryForPatient(String patientId) {

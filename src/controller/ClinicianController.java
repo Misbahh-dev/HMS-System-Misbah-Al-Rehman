@@ -281,16 +281,6 @@ public class ClinicianController {
     }
     
     // ============================================================
-    // NEW METHOD: Clear current user (for logout) - REQUIRED BY LoginController
-    // ============================================================
-    public void clearCurrentUser() {
-        this.currentUserId = null;
-        this.currentUserRole = null;
-        this.currentClinicianId = null;
-        setupForUserRole(); // Reset to default state
-    }
-    
-    // ============================================================
     // NEW METHOD: Get clinicians by specialty (if needed)
     // ============================================================
     public List<Clinician> getCliniciansBySpecialty(String specialty) {

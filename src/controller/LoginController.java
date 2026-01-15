@@ -187,8 +187,7 @@ public class LoginController {
         // Staff/Admin see all data (no filtering)
         patientController.setCurrentPatientId(null);
         clinicianController.setCurrentClinicianId(null);
-        appointmentController.setCurrentPatientId(null);
-        appointmentController.setCurrentClinicianId(null);
+        appointmentController.setStaffView();
        prescriptionController.setCurrentStaffId(currentUserId);  // Shows ALL prescriptions
         referralController.setCurrentStaffId(currentUserId);      // Shows ALL referrals
         staffController.setCurrentStaffId(currentUserId);
@@ -209,17 +208,7 @@ public class LoginController {
     }
     
     
-    // ============================================================
-    // HELPER METHOD: Clear all controllers (for logout)
-    // ============================================================
-    public void clearAllControllers() {
-        patientController.clearCurrentUser();
-        clinicianController.clearCurrentUser();
-        appointmentController.clearCurrentUser();
-        prescriptionController.clearCurrentUser();
-        referralController.clearCurrentUser(); 
-        staffController.clearCurrentUser();// ADD THIS LINE
-    }
+  
     
     // Describe access level based on role
     private String getAccessDescription(String role) {
@@ -229,7 +218,7 @@ public class LoginController {
             case "clinician":
                 return "Can manage assigned patients, appointments, and prescriptions";
             case "staff":
-                return "Full administrative access to all modules";
+                return "Access to view all modules";
             case "admin":
                 return "Full system administrator privileges";
             default:
@@ -262,20 +251,4 @@ public class LoginController {
         return currentUser; 
     }
     
-    // ============================================================
-    // LOGOUT METHOD
-    // ============================================================
-    public void logout() {
-        isAuthenticated = false;
-        currentUserRole = null;
-        currentUser = null;
-        currentUserId = null;
-        
-        // Clear all controller states
-        clearAllControllers();
-        
-        // Clear view fields
-        view.clearFields();
-        view.showMessage("Logged out successfully.", false);
-    }
 }

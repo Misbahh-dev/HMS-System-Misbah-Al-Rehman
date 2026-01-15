@@ -206,17 +206,5 @@ public class StaffController {
         return currentStaffId != null && !currentStaffId.isEmpty();
     }
     
-    // ============================================================
-    // Clear current user (for logout)
-    // ============================================================
-    public void clearCurrentUser() {
-        this.currentUserId = null;
-        this.currentStaffId = null; // Clear staff ID
-        // Reset to default state
-        view.setReadOnlyMode(true);
-        view.hideAllButtons();
-        view.setTitle("Staff Management - Please Login");
-        view.setNextId("");
-        refreshView();
-    }
+
 }

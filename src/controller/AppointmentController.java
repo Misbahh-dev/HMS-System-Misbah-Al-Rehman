@@ -90,9 +90,9 @@ public class AppointmentController {
         this.currentClinicianId = null; // Clear clinician ID
         this.currentUserRole = "PATIENT";
         
-        // PATIENT VIEW: Read-only mode
+        // PATIENT VIEW
         view.setReadOnlyMode(false); // Allow booking new appointments
-        view.hideAddDeleteButtons(); // Hide delete button for safety
+        view.showAllButtons(); 
         view.setTitle("My Appointments");
         
         refreshAppointments(); // Refresh to show filtered data
@@ -397,14 +397,5 @@ public class AppointmentController {
     public String getCurrentUserRole() {
         return currentUserRole;
     }
-    
-    // ============================================================
-    // Clear current user IDs (for logout)
-    // ============================================================
-    public void clearCurrentUser() {
-        this.currentPatientId = null;
-        this.currentClinicianId = null;
-        this.currentUserRole = null;
-        setupForUserRole(); // Reset to default state
-    }
+   
 }

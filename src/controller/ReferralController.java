@@ -110,11 +110,6 @@ public class ReferralController {
         refreshReferrals(null); // Show all referrals
     }
     
-    // NEW: Clear current user (for logout)
-    public void clearCurrentUser() {
-        this.currentClinicianId = null;
-        refreshReferrals(null);  // Show all referrals when logged out
-    }
     
     // ============================================================
     // NEW: Check if current user is staff/admin
