@@ -37,8 +37,10 @@ public class ReferralView extends JPanel {
     private JComboBox<String> cbAppointmentId;
     private JComboBox<String> cbStatus;     // NEW DROPDOWN
 
-    // Button reference for new methods
+    // Button references
     private JButton btnAdd;
+    private JButton btnUpdate; // ADDED
+    private JButton btnDelete; // ADDED
 
     private final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private final DateTimeFormatter localDateFormatter =
@@ -191,8 +193,20 @@ public class ReferralView extends JPanel {
         btnAdd.setPreferredSize(new Dimension(160, 30));
         btnAdd.addActionListener(e -> onAdd());
 
+        // ADDED: Update and Delete buttons
+        btnUpdate = new JButton("Update Selected");
+        btnDelete = new JButton("Delete Selected");
+
+        btnUpdate.setPreferredSize(new Dimension(160, 30));
+        btnDelete.setPreferredSize(new Dimension(160, 30));
+
+        btnUpdate.addActionListener(e -> onUpdate());
+        btnDelete.addActionListener(e -> onDelete());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         buttonPanel.add(btnAdd);
+        buttonPanel.add(btnUpdate); // ADDED
+        buttonPanel.add(btnDelete); // ADDED
 
         add(buttonPanel, BorderLayout.WEST);
     }
@@ -413,6 +427,103 @@ public class ReferralView extends JPanel {
         clearFormButKeepIds();
     }
 
+    // ============================================================
+    // ADDED: Build referral from form data
+    // ============================================================
+    private Referral buildReferralFromForm() {
+        return new Referral(
+                txtId.getText().trim(),
+                (String) cbPatientId.getSelectedItem(),
+                (String) cbRefClin.getSelectedItem(),
+                (String) cbToClin.getSelectedItem(),
+                (String) cbRefFacility.getSelectedItem(),
+                (String) cbToFacility.getSelectedItem(),
+                txtReferralDate.getText().trim(),
+                (String) cbUrgency.getSelectedItem(),
+                txtReason.getText().trim(),
+                txtClinicalSummary.getText().trim(),
+                txtRequestedService.getText().trim(),
+                (String) cbStatus.getSelectedItem(),
+                (String) cbAppointmentId.getSelectedItem(),
+                txtNotes.getText().trim(),
+                txtCreatedDate.getText().trim(),
+                java.time.LocalDate.now().format(localDateFormatter) // Update last updated
+        );
+    }
+
+    // ============================================================
+    // ADDED: Update button handler
+    // ============================================================
+    private void onUpdate() {
+        if (controller == null) return;
+        
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, 
+                "Please select a referral to update.",
+                "No Selection", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Validate form
+        String errors = validateForm();
+        if (!errors.isEmpty()) {
+            JOptionPane.showMessageDialog(this, errors,
+                    "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        Referral r = buildReferralFromForm();
+        
+        controller.updateReferral(r);
+        
+        JOptionPane.showMessageDialog(this,
+                "Referral " + r.getId() + " updated successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE);
+        
+        refreshAutoId(); // For next new referral
+    }
+
+    // ============================================================
+    // ADDED: Delete button handler
+    // ============================================================
+    private void onDelete() {
+        if (controller == null) return;
+        
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, 
+                "Please select a referral to delete.",
+                "No Selection", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        String id = table.getValueAt(row, 0).toString();
+        String reason = table.getValueAt(row, 8).toString(); // Get referral reason
+        
+        // Ask for confirmation
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete referral:\n" +
+            "ID: " + id + "\n" +
+            "Reason: " + reason + "\n\n" +
+            "This will add a deletion note to the text file.",
+            "Confirm Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            controller.deleteReferral(id);
+            clearFormButKeepIds();
+            JOptionPane.showMessageDialog(this, 
+                "Referral deleted successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
     private String validateForm() {
         StringBuilder sb = new StringBuilder();
 
@@ -451,7 +562,7 @@ public class ReferralView extends JPanel {
     }
 
     // ============================================================
-    // NEW METHODS ADDED AS REQUESTED
+    // ACCESS CONTROL METHODS
     // ============================================================
     
     public void setReadOnlyMode(boolean readOnly) {
@@ -474,17 +585,36 @@ public class ReferralView extends JPanel {
         // Date field
         txtReferralDate.setEditable(!readOnly);
         
-        // Hide/show the "Create Referral" button
+        // Hide/show buttons
         btnAdd.setVisible(!readOnly);
+        if (btnUpdate != null) btnUpdate.setVisible(!readOnly);
+        if (btnDelete != null) btnDelete.setVisible(!readOnly);
     }
     
     public void hideAddUpdateButtons() {
-        // Hide the "Create Referral" button
+        // Hide the buttons
         btnAdd.setVisible(false);
+        if (btnUpdate != null) btnUpdate.setVisible(false);
+        if (btnDelete != null) btnDelete.setVisible(false);
     }
     
     public void showAddUpdateButtons() {
-        // Show the "Create Referral" button  
+        // Show the buttons  
         btnAdd.setVisible(true);
+        if (btnUpdate != null) btnUpdate.setVisible(true);
+        if (btnDelete != null) btnDelete.setVisible(true);
+    }
+
+    // ============================================================
+    // ADDED: Update UI methods for role-based access
+    // ============================================================
+    public void showUpdateDeleteButtons() {
+        if (btnUpdate != null) btnUpdate.setVisible(true);
+        if (btnDelete != null) btnDelete.setVisible(true);
+    }
+
+    public void hideUpdateDeleteButtons() {
+        if (btnUpdate != null) btnUpdate.setVisible(false);
+        if (btnDelete != null) btnDelete.setVisible(false);
     }
 }

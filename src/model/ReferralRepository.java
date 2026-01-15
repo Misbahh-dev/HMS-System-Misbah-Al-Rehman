@@ -82,4 +82,81 @@ public class ReferralRepository {
             System.err.println("Failed to append referral: " + ex.getMessage());
         }
     }
+
+    // ============================================================
+    // UPDATE REFERRAL
+    // ============================================================
+    public void update(Referral updatedReferral) {
+        for (int i = 0; i < referrals.size(); i++) {
+            Referral r = referrals.get(i);
+            if (r.getId().equals(updatedReferral.getId())) {
+                referrals.set(i, updatedReferral);
+                saveAllToCsv();
+                return;
+            }
+        }
+        System.err.println("Referral not found for update: " + updatedReferral.getId());
+    }
+
+    // ============================================================
+    // DELETE REFERRAL BY ID
+    // ============================================================
+    public void removeById(String id) {
+        Referral referralToRemove = null;
+        for (Referral r : referrals) {
+            if (r.getId().equals(id)) {
+                referralToRemove = r;
+                break;
+            }
+        }
+        
+        if (referralToRemove != null) {
+            referrals.remove(referralToRemove);
+            saveAllToCsv();
+        }
+    }
+
+    // ============================================================
+    // SAVE ALL REFERRALS TO CSV (NEW METHOD)
+    // ============================================================
+    private void saveAllToCsv() {
+        try {
+            List<String[]> allData = new ArrayList<>();
+            
+            // Add header row
+            allData.add(new String[]{
+                "referral_id", "patient_id", "referring_clinician_id", "referred_to_clinician_id",
+                "referring_facility_id", "referred_to_facility_id", "referral_date", "urgency_level",
+                "referral_reason", "clinical_summary", "requested_investigations", "status",
+                "appointment_id", "notes", "created_date", "last_updated"
+            });
+            
+            // Add all referrals
+            for (Referral r : referrals) {
+                allData.add(new String[]{
+                    r.getId(),
+                    r.getPatientId(),
+                    r.getReferringClinicianId(),
+                    r.getReferredToClinicianId(),
+                    r.getReferringFacilityId(),
+                    r.getReferredToFacilityId(),
+                    r.getReferralDate(),
+                    r.getUrgencyLevel(),
+                    r.getReferralReason(),
+                    r.getClinicalSummary(),
+                    r.getRequestedService(), // Note: CSV column is "requested_investigations" but model field is "requestedService"
+                    r.getStatus(),
+                    r.getAppointmentId(),
+                    r.getNotes(),
+                    r.getCreatedDate(),
+                    r.getLastUpdated()
+                });
+            }
+            
+            CsvUtils.writeCsv(csvPath, allData);
+            
+        } catch (IOException ex) {
+            System.err.println("Failed to save referrals to CSV: " + ex.getMessage());
+        }
+    }
 }

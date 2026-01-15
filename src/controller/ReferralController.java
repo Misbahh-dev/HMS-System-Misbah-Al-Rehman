@@ -106,6 +106,7 @@ public class ReferralController {
         this.currentClinicianId = null;
          view.setReadOnlyMode(false);
          view.setTitle("Referral Management (Admin Mode)");
+         view.showUpdateDeleteButtons();
         refreshReferrals(null); // Show all referrals
     }
     
@@ -183,6 +184,24 @@ public class ReferralController {
     // ---------------------------------------------
     public void addReferral(Referral r) {
         referralManager.createReferral(r);   // Saves CSV + writes text file
+        refreshReferrals();
+    }
+    
+    // ============================================================
+    //  Update referral
+    // ============================================================
+    public void updateReferral(Referral r) {
+        // Check permissions if needed (optional)
+        referralManager.updateReferral(r);
+        refreshReferrals();
+    }
+    
+     // ============================================================
+    // ADDED: Delete referral method
+    // ============================================================
+    public void deleteReferral(String id) {
+        // Check permissions if needed (optional)
+        referralManager.deleteReferral(id);
         refreshReferrals();
     }
 }

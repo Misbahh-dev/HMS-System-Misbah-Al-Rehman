@@ -8,6 +8,7 @@ import java.util.List;
 public class ReferralManager {
 
     private static ReferralManager instance;
+    private static boolean initialized = false;  // ADDED: Track initialization
 
     private final ReferralRepository referralRepository;
     private final PatientRepository patientRepository;
@@ -29,7 +30,7 @@ public class ReferralManager {
     }
 
 
-    // Singleton access
+    // Singleton access - Now with initialization guard
     public static synchronized ReferralManager getInstance(
             ReferralRepository rr,
             PatientRepository pr,
@@ -38,11 +39,38 @@ public class ReferralManager {
             String referralTextPath) {
 
         if (instance == null) {
+            // First time initialization - create instance
             instance = new ReferralManager(rr, pr, cr, fr, referralTextPath);
+            initialized = true;
+        } else if (!initialized) {
+            // This shouldn't happen, but just in case
+            instance = new ReferralManager(rr, pr, cr, fr, referralTextPath);
+            initialized = true;
+        }
+        // If already initialized, return existing instance (ignore new parameters)
+        
+        return instance;
+    }
+    
+    // ============================================================
+    // ADDED: Alternative getInstance() without parameters
+    // (for getting the instance after it's been initialized)
+    // ============================================================
+    public static synchronized ReferralManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException(
+                "ReferralManager not initialized. Call getInstance(with parameters) first."
+            );
         }
         return instance;
     }
-
+    
+    // ============================================================
+    // ADDED: Check if already initialized (optional)
+    // ============================================================
+    public static synchronized boolean isInitialized() {
+        return initialized;
+    }
 
     public void createReferral(Referral r) {
         referralRepository.addAndAppend(r);
@@ -53,11 +81,63 @@ public class ReferralManager {
         return referralRepository.getAll();
     }
 
+    // ============================================================
+    // ADDED: UPDATE REFERRAL METHOD
+    // ============================================================
+    public void updateReferral(Referral r) {
+        referralRepository.update(r);
+        // Also update the text file
+        writeReferralText(r);
+    }
 
-    /**
-     * Writes a nicely formatted referral text file showing full details.
-     * This is what gets you marks under “output text file of referral content”.
-     */
+    // ============================================================
+    // ADDED: DELETE REFERRAL METHOD
+    // ============================================================
+    public void deleteReferral(String id) {
+        // Find the referral first
+        Referral referralToDelete = null;
+        for (Referral r : referralRepository.getAll()) {
+            if (r.getId().equals(id)) {
+                referralToDelete = r;
+                break;
+            }
+        }
+        
+        if (referralToDelete != null) {
+            referralRepository.removeById(id);
+            // Append deletion note to text file
+            writeDeletionNote(referralToDelete);
+        }
+    }
+
+    // ============================================================
+    // ADDED: WRITE DELETION NOTE METHOD
+    // ============================================================
+    private void writeDeletionNote(Referral r) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(referralTextPath, true))) {
+            bw.write("==============================================");
+            bw.newLine();
+            bw.write("            REFERRAL DELETED / CANCELLED      ");
+            bw.newLine();
+            bw.write("==============================================");
+            bw.newLine();
+            bw.write("Referral ID: " + r.getId());
+            bw.newLine();
+            bw.write("Patient ID: " + r.getPatientId());
+            bw.newLine();
+            bw.write("Reason for Referral: " + r.getReferralReason());
+            bw.newLine();
+            bw.write("Deleted Date: " + java.time.LocalDate.now().toString());
+            bw.newLine();
+            bw.write("----------------------------------------------");
+            bw.newLine();
+            bw.newLine();
+        } catch (IOException ex) {
+            System.err.println("Failed to write deletion note: " + ex.getMessage());
+        }
+    }
+
+    //referaltext
     private void writeReferralText(Referral r) {
 
         Patient patient = patientRepository.findById(r.getPatientId());
