@@ -33,7 +33,7 @@ public class ClinicianView extends JPanel {
     private JPanel buttonsPanel;
     
     // Date formatter
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public ClinicianView() {
 
@@ -91,12 +91,12 @@ public class ClinicianView extends JPanel {
         txtEmail = new JTextField();
         txtWorkplaceId = new JTextField();
 
-        cmbTitle = new JComboBox<>(new String[]{"GP", "Consultant", "Nurse", "Specialist"});
+        cmbTitle = new JComboBox<>(new String[]{"GP", "Consultant", "Nurse", "Specialist", "Senior Nurse", "Practice Nurse", "Staff Nurse"});
         cmbWorkplaceType = new JComboBox<>(new String[]{"GP Surgery", "Hospital", "Clinic"});
         cmbEmployment = new JComboBox<>(new String[]{"Full-time", "Part-time", "Locum"});
 
         dateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
-        dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "dd/MM/yyyy"));
+        dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd"));
 
         int row = 0;
 
