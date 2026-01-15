@@ -109,7 +109,7 @@ public class AppointmentController {
         
         // CLINICIAN VIEW: Edit mode but only for their appointments
         view.setReadOnlyMode(false);
-        view.showAllButtons(); // Clinicians can manage their appointments
+        view.hideAddDeleteButtons(); // Clinicians can manage their appointments
         view.setTitle("My Clinic Appointments");
         
         refreshAppointments(); // Refresh to show filtered data
