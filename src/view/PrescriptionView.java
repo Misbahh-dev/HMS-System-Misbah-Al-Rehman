@@ -18,7 +18,7 @@ public class PrescriptionView extends JPanel {
     private DefaultTableModel model;
 
     private JLabel lblId;
-    private JLabel titleLabel; // Added for setting title
+    private JLabel titleLabel;
 
     private JComboBox<String> cbPatientId;
     private JComboBox<String> cbClinicianId;
@@ -37,11 +37,10 @@ public class PrescriptionView extends JPanel {
 
     private JTextArea txtInstructions;
 
-    // Button references for showing/hiding
+    // Button references
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnDelete;
-    private JPanel btnPanel;
 
     private boolean readOnlyMode = false;
 
@@ -49,7 +48,6 @@ public class PrescriptionView extends JPanel {
     private final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
 
     public PrescriptionView() {
-
         setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -63,35 +61,17 @@ public class PrescriptionView extends JPanel {
         add(titlePanel, BorderLayout.NORTH);
 
         // ============================================================
-        // TABLE
+        // MAIN CONTENT PANEL (form and table)
         // ============================================================
-        model = new DefaultTableModel(
-                new Object[]{
-                        "ID", "Patient", "Clinician", "Appt",
-                        "Presc Date", "Drug", "Dosage", "Freq",
-                        "Duration", "Qty", "Instructions",
-                        "Pharmacy", "Status", "Issue", "Collected"
-                }, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
-            }
-        };
-        table = new JTable(model);
-        table.setRowHeight(22);
+        JPanel mainContentPanel = new JPanel(new BorderLayout(10, 10));
         
-        JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setPreferredSize(new Dimension(800, 200));
-        add(tableScrollPane, BorderLayout.SOUTH);
-
         // ============================================================
-        // FORM
+        // FORM (CENTER - takes more space)
         // ============================================================
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createTitledBorder("Prescription Details"));
         GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(6, 8, 6, 8);
+        gc.insets = new Insets(8, 10, 8, 10);
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 0.5;
 
@@ -121,7 +101,7 @@ public class PrescriptionView extends JPanel {
         txtIssueDate      = new JTextField();
         txtCollectionDate = new JTextField();
 
-        txtInstructions = new JTextArea(3, 20);
+        txtInstructions = new JTextArea(4, 25); // Made text area larger
         txtInstructions.setLineWrap(true);
         txtInstructions.setWrapStyleWord(true);
 
@@ -147,7 +127,7 @@ public class PrescriptionView extends JPanel {
         addPair(form, gc, row++, "Issue Date (yyyy-MM-dd):", txtIssueDate,
                 "Collection Date (yyyy-MM-dd):", txtCollectionDate);
 
-        // Instructions field
+        // Instructions field - made larger
         gc.gridy = row;
         gc.gridx = 0;
         gc.gridwidth = 1;
@@ -155,30 +135,72 @@ public class PrescriptionView extends JPanel {
 
         gc.gridx = 1;
         gc.gridwidth = 3;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weighty = 0.5;
         form.add(new JScrollPane(txtInstructions), gc);
 
         JScrollPane formScrollPane = new JScrollPane(form);
-        formScrollPane.setPreferredSize(new Dimension(800, 300));
-        add(formScrollPane, BorderLayout.CENTER);
+        mainContentPanel.add(formScrollPane, BorderLayout.CENTER);
 
         // ============================================================
-        // BUTTONS PANEL
+        // TABLE (SOUTH)
         // ============================================================
-        btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        model = new DefaultTableModel(
+                new Object[]{
+                        "ID", "Patient", "Clinician", "Appt",
+                        "Presc Date", "Drug", "Dosage", "Freq",
+                        "Duration", "Qty", "Instructions",
+                        "Pharmacy", "Status", "Issue", "Collected"
+                }, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        table = new JTable(model);
+        table.setRowHeight(22);
+        
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setPreferredSize(new Dimension(800, 150));
+        mainContentPanel.add(tableScrollPane, BorderLayout.SOUTH);
+
+        add(mainContentPanel, BorderLayout.CENTER);
+
+        // ============================================================
+        // BUTTONS PANEL (EAST - VERTICAL LAYOUT)
+        // ============================================================
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         
         btnAdd = new JButton("Add");
         btnUpdate = new JButton("Update Selected");
         btnDelete = new JButton("Delete Selected");
 
+        // Set smaller button size
+        Dimension buttonSize = new Dimension(120, 30);
+        btnAdd.setPreferredSize(buttonSize);
+        btnAdd.setMaximumSize(buttonSize);
+        btnUpdate.setPreferredSize(buttonSize);
+        btnUpdate.setMaximumSize(buttonSize);
+        btnDelete.setPreferredSize(buttonSize);
+        btnDelete.setMaximumSize(buttonSize);
+
         btnAdd.addActionListener(e -> onAdd());
         btnUpdate.addActionListener(e -> onUpdate());
         btnDelete.addActionListener(e -> onDelete());
 
-        btnPanel.add(btnAdd);
-        btnPanel.add(btnUpdate);
-        btnPanel.add(btnDelete);
+        // Add vertical spacing between buttons
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(btnAdd);
+        buttonPanel.add(Box.createVerticalStrut(15));
+        buttonPanel.add(btnUpdate);
+        buttonPanel.add(Box.createVerticalStrut(15));
+        buttonPanel.add(btnDelete);
+        buttonPanel.add(Box.createVerticalStrut(10));
 
-        add(btnPanel, BorderLayout.EAST);
+        add(buttonPanel, BorderLayout.EAST);
 
         // Table selection listener
         table.getSelectionModel().addListSelectionListener(e -> {
@@ -190,7 +212,7 @@ public class PrescriptionView extends JPanel {
     }
 
     // ============================================================
-    // NEW METHODS NEEDED BY CONTROLLER
+    // UI STATE METHODS
     // ============================================================
     
     public void setReadOnlyMode(boolean readOnly) {
@@ -199,18 +221,15 @@ public class PrescriptionView extends JPanel {
     }
     
     public void showAddUpdateButtons() {
-        if (btnPanel != null) {
-            btnPanel.setVisible(true);
-        }
         if (btnAdd != null) btnAdd.setVisible(true);
         if (btnUpdate != null) btnUpdate.setVisible(true);
         if (btnDelete != null) btnDelete.setVisible(true);
     }
     
     public void hideAddUpdateButtons() {
-        if (btnPanel != null) {
-            btnPanel.setVisible(false);
-        }
+        if (btnAdd != null) btnAdd.setVisible(false);
+        if (btnUpdate != null) btnUpdate.setVisible(false);
+        if (btnDelete != null) btnDelete.setVisible(false);
     }
     
     public void setTitle(String title) {
@@ -220,7 +239,6 @@ public class PrescriptionView extends JPanel {
     }
     
     private void updateUIState() {
-        // Set editable state for all input components
         boolean editable = !readOnlyMode;
         
         cbPatientId.setEnabled(editable);
@@ -239,7 +257,6 @@ public class PrescriptionView extends JPanel {
         txtCollectionDate.setEditable(editable);
         txtInstructions.setEditable(editable);
         
-        // Update button visibility
         if (readOnlyMode) {
             hideAddUpdateButtons();
         } else {
@@ -482,10 +499,9 @@ public class PrescriptionView extends JPanel {
         txtFrequency.setText("");
         txtDuration.setText("");
         txtQuantity.setText("");
-        cbStatus.setSelectedIndex(0);   // reset
+        cbStatus.setSelectedIndex(0);
         txtIssueDate.setText("");
         txtCollectionDate.setText("");
         txtInstructions.setText("");
-        // keep dropdown selections and ID
     }
 }

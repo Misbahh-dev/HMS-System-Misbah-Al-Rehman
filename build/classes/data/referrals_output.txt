@@ -19,3 +19,118 @@ Created Date: 23/11/2025
 Last Updated: 23/11/2025
 ----------------------------------------------
 
+==============================================
+            REFERRAL SUMMARY REPORT           
+==============================================
+Referral ID: R011
+Referring Clinician: GP Dr. Mark Davies (GP - General Practice)
+Referred To: GP Dr.Susan Clarke (GP - General Practice)
+Referring Facility: Birmingham Central GP Surgery (GP Surgery)
+Referred To Facility: Solihull Family Practice (GP Surgery)
+Referral Date: 23/11/2025
+Urgency Level: Urgent
+Reason for Referral: Chest Pain
+Requested Service: ECG
+Status: Completed
+Clinical Summary:
+Very very Critical
+Notes:
+Nil
+Created Date: 23/11/2025
+Last Updated: 15/01/2026
+----------------------------------------------
+
+==============================================
+            REFERRAL SUMMARY REPORT           
+==============================================
+Referral ID: R011
+Referring Clinician: GP Dr. Mark Davies (GP - General Practice)
+Referred To: GP Dr.Susan Clarke (GP - General Practice)
+Referring Facility: Birmingham Central GP Surgery (GP Surgery)
+Referred To Facility: Solihull Family Practice (GP Surgery)
+Referral Date: 23/11/2025
+Urgency Level: Urgent
+Reason for Referral: Chest Pain
+Requested Service: ECG
+Status: Pending
+Clinical Summary:
+Very very Critical
+Notes:
+Nil
+Created Date: 23/11/2025
+Last Updated: 15/01/2026
+----------------------------------------------
+
+==============================================
+            REFERRAL SUMMARY REPORT           
+==============================================
+Referral ID: R011
+Referring Clinician: GP Dr. Mark Davies (GP - General Practice)
+Referred To: GP Dr.Susan Clarke (GP - General Practice)
+Referring Facility: Birmingham Central GP Surgery (GP Surgery)
+Referred To Facility: Solihull Family Practice (GP Surgery)
+Referral Date: 23/11/2025
+Urgency Level: Urgent
+Reason for Referral: Chest Pain
+Requested Service: ECG
+Status: Pending
+Clinical Summary:
+Very very Critical
+Notes:
+TEst
+Created Date: 23/11/2025
+Last Updated: 15/01/2026
+----------------------------------------------
+
+==============================================
+            REFERRAL SUMMARY REPORT           
+==============================================
+Referral ID: R011
+Referring Clinician: GP Dr. Mark Davies (GP - General Practice)
+Referred To: GP Dr.Susan Clarke (GP - General Practice)
+Referring Facility: Birmingham Central GP Surgery (GP Surgery)
+Referred To Facility: Solihull Family Practice (GP Surgery)
+Referral Date: 23/11/2025
+Urgency Level: Urgent
+Reason for Referral: Chest Pain
+Requested Service: ECG
+Status: Pending
+Clinical Summary:
+Very very Critical
+Notes:
+Nil
+Created Date: 23/11/2025
+Last Updated: 15/01/2026
+----------------------------------------------
+
+==============================================
+            REFERRAL SUMMARY REPORT           
+==============================================
+Referral ID: R001
+Patient: Michael Davis (NHS: 5678901234)
+Referring Clinician: GP Dr. David Thompson (GP - General Practice)
+Referred To: Consultant Dr. Richard Evans (Consultant - Cardiology)
+Referring Facility: Birmingham Central GP Surgery (GP Surgery)
+Referred To Facility: Heartlands Hospital (Hospital)
+Referral Date: 2025-09-10
+Urgency Level: Routine
+Reason for Referral: Heart murmur investigation
+Requested Service: Echocardiogram|ECG
+Status: Completed
+Clinical Summary:
+35-year-old male with Grade 2/6 systolic murmur detected during routine examination. No symptoms of chest pain or breathlessness.
+Notes:
+Patient seen, echo normal
+Created Date: 2025-09-10
+Last Updated: 15/01/2026
+----------------------------------------------
+
+==============================================
+            REFERRAL DELETED / CANCELLED      
+==============================================
+Referral ID: R001
+Patient ID: P005
+Reason for Referral: Heart murmur investigation
+Deleted Date: 2026-01-15
+----------------------------------------------
+

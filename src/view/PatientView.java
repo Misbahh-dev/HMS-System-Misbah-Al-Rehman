@@ -1,4 +1,4 @@
-    package view;
+package view;
 
     import controller.PatientController;
     import model.Patient;
@@ -7,6 +7,7 @@
     import javax.swing.table.DefaultTableModel;
     import java.awt.*;
     import java.util.List;
+    
 
     public class PatientView extends JPanel {
 

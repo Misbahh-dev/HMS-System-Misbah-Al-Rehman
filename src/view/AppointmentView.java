@@ -6,8 +6,10 @@ import model.Appointment;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class AppointmentView extends JPanel {
@@ -18,8 +20,8 @@ public class AppointmentView extends JPanel {
     private DefaultTableModel model;
 
     // Form components
-    private JTextField txtId, txtDate, txtTime, txtDuration, txtType;
-    private JTextField txtReason, txtCreatedDate, txtLastModified;
+    private JTextField txtId, txtTime, txtDuration, txtType;
+    private JTextField txtReason, txtLastModified;
 
     private JComboBox<String> cbStatus;
     private JComboBox<String> cbPatientId;
@@ -27,8 +29,10 @@ public class AppointmentView extends JPanel {
     private JComboBox<String> cbFacilityId;
 
     private JTextArea txtNotes;
-
-    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    
+    // NEW: Date spinners
+    private JSpinner dateSpinner;          // For appointment date
+    private JSpinner createdDateSpinner;   // For created date
     
     // ============================================================
     // ADDED: UI components for role-based access
@@ -38,6 +42,9 @@ public class AppointmentView extends JPanel {
     private JButton btnUpdate;
     private JButton btnDelete;
     private JPanel buttonsPanel;
+
+    // CORRECTED: Date formatter to match appointments.csv format
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public AppointmentView() {
         setLayout(new BorderLayout(10, 10));
@@ -90,7 +97,14 @@ public class AppointmentView extends JPanel {
         cbClinicianId = new JComboBox<>();
         cbFacilityId = new JComboBox<>();
 
-        txtDate = new JTextField();
+        // NEW: Date spinners with CORRECT format "yyyy-MM-dd"
+        dateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
+        dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd"));
+        
+        createdDateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
+        createdDateSpinner.setEditor(new JSpinner.DateEditor(createdDateSpinner, "yyyy-MM-dd"));
+        createdDateSpinner.setEnabled(false); // Usually read-only
+
         txtTime = new JTextField();
         txtDuration = new JTextField();
         txtType = new JTextField();
@@ -109,16 +123,16 @@ public class AppointmentView extends JPanel {
         txtNotes.setLineWrap(true);
         txtNotes.setWrapStyleWord(true);
 
-        txtCreatedDate = new JTextField();
         txtLastModified = new JTextField();
+        txtLastModified.setEditable(false);
 
         int row = 0;
         addFieldPair(form, gc, row++, "Appointment ID:", txtId, "Patient ID:", cbPatientId);
         addFieldPair(form, gc, row++, "Clinician ID:", cbClinicianId, "Facility ID:", cbFacilityId);
-        addFieldPair(form, gc, row++, "Appointment Date:", txtDate, "Time (HH:mm):", txtTime);
+        addFieldPair(form, gc, row++, "Appointment Date:", dateSpinner, "Time (HH:mm):", txtTime);
         addFieldPair(form, gc, row++, "Duration (min):", txtDuration, "Appointment Type:", txtType);
         addFieldPair(form, gc, row++, "Status:", cbStatus, "Reason for Visit:", txtReason);
-        addFieldPair(form, gc, row++, "Created Date:", txtCreatedDate, "Last Modified:", txtLastModified);
+        addFieldPair(form, gc, row++, "Created Date:", createdDateSpinner, "Last Modified:", txtLastModified);
 
         // Notes row
         gc.gridx = 0; gc.gridy = row; gc.gridwidth = 1;
@@ -210,8 +224,10 @@ public class AppointmentView extends JPanel {
         for (String s : facilities) cbFacilityId.addItem(s);
 
         txtId.setText(controller.generateId());
-        txtCreatedDate.setText(LocalDate.now().format(fmt));
-        txtLastModified.setText(LocalDate.now().format(fmt));
+        
+        // Set today's date for created date
+        createdDateSpinner.setValue(new Date());
+        txtLastModified.setText(dateFormat.format(new Date()));
     }
 
     // ============================================================
@@ -255,14 +271,14 @@ public class AppointmentView extends JPanel {
                 (String) cbPatientId.getSelectedItem(),
                 (String) cbClinicianId.getSelectedItem(),
                 (String) cbFacilityId.getSelectedItem(),
-                txtDate.getText(),
+                dateFormat.format(dateSpinner.getValue()), // Uses "yyyy-MM-dd" format
                 txtTime.getText(),
                 txtDuration.getText(),
                 txtType.getText(),
                 (String) cbStatus.getSelectedItem(),
                 txtReason.getText(),
                 txtNotes.getText(),
-                txtCreatedDate.getText(),
+                dateFormat.format(createdDateSpinner.getValue()), // Uses "yyyy-MM-dd" format
                 txtLastModified.getText()
         );
 
@@ -295,15 +311,15 @@ public class AppointmentView extends JPanel {
                 (String) cbPatientId.getSelectedItem(),
                 (String) cbClinicianId.getSelectedItem(),
                 (String) cbFacilityId.getSelectedItem(),
-                txtDate.getText(),
+                dateFormat.format(dateSpinner.getValue()), // Uses "yyyy-MM-dd" format
                 txtTime.getText(),
                 txtDuration.getText(),
                 txtType.getText(),
                 (String) cbStatus.getSelectedItem(),
                 txtReason.getText(),
                 txtNotes.getText(),
-                txtCreatedDate.getText(),
-                txtLastModified.getText()
+                dateFormat.format(createdDateSpinner.getValue()), // Uses "yyyy-MM-dd" format
+                dateFormat.format(new Date()) // Update last modified to now
         );
         
         // Call update method in controller
@@ -356,14 +372,37 @@ public class AppointmentView extends JPanel {
         cbPatientId.setSelectedItem(getValue(row, 1));
         cbClinicianId.setSelectedItem(getValue(row, 2));
         cbFacilityId.setSelectedItem(getValue(row, 3));
-        txtDate.setText(getValue(row, 4));
+        
+        // Parse appointment date string to set spinner
+        String dateStr = getValue(row, 4);
+        if (!dateStr.isEmpty()) {
+            try {
+                Date apptDate = dateFormat.parse(dateStr);
+                dateSpinner.setValue(apptDate);
+            } catch (ParseException e) {
+                // If parsing fails, keep current date
+                System.err.println("Failed to parse appointment date: " + dateStr);
+            }
+        }
+        
         txtTime.setText(getValue(row, 5));
         txtDuration.setText(getValue(row, 6));
         txtType.setText(getValue(row, 7));
         cbStatus.setSelectedItem(getValue(row, 8));
         txtReason.setText(getValue(row, 9));
         txtNotes.setText(getValue(row, 10));
-        txtCreatedDate.setText(getValue(row, 11));
+        
+        // Parse created date string to set spinner
+        String createdDateStr = getValue(row, 11);
+        if (!createdDateStr.isEmpty()) {
+            try {
+                Date createdDate = dateFormat.parse(createdDateStr);
+                createdDateSpinner.setValue(createdDate);
+            } catch (ParseException e) {
+                System.err.println("Failed to parse created date: " + createdDateStr);
+            }
+        }
+        
         txtLastModified.setText(getValue(row, 12));
     }
     
@@ -386,9 +425,6 @@ public class AppointmentView extends JPanel {
         }
         if (cbFacilityId.getSelectedItem() == null) {
             errors.append("- Facility ID is required\n");
-        }
-        if (txtDate.getText().trim().isEmpty()) {
-            errors.append("- Appointment date is required (dd/MM/yyyy)\n");
         }
         if (txtTime.getText().trim().isEmpty()) {
             errors.append("- Appointment time is required (HH:mm)\n");
@@ -418,13 +454,15 @@ public class AppointmentView extends JPanel {
     // ADDED: CLEAR FORM
     // ============================================================
     private void clearForm() {
-        txtDate.setText("");
+        // Reset date spinners to today
+        dateSpinner.setValue(new Date());
+        
         txtTime.setText("");
         txtDuration.setText("");
         txtType.setText("");
         txtReason.setText("");
         txtNotes.setText("");
-        txtLastModified.setText(LocalDate.now().format(fmt));
+        txtLastModified.setText(dateFormat.format(new Date()));
         
         // Don't clear ID, patient, clinician, facility - let dropdowns stay
         // Regenerate ID for next appointment
@@ -448,7 +486,10 @@ public class AppointmentView extends JPanel {
         cbFacilityId.setEnabled(!readOnly);
         cbStatus.setEnabled(!readOnly);
         
-        txtDate.setEditable(!readOnly);
+        // Date spinners
+        dateSpinner.setEnabled(!readOnly);
+        createdDateSpinner.setEnabled(!readOnly);
+        
         txtTime.setEditable(!readOnly);
         txtDuration.setEditable(!readOnly);
         txtType.setEditable(!readOnly);
@@ -487,4 +528,11 @@ public class AppointmentView extends JPanel {
         if (btnUpdate != null) btnUpdate.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);
     }
-}
+    
+    public void hideUpdateButton() {
+     if (btnUpdate != null) btnUpdate.setVisible(false);
+     if (btnAdd != null) btnAdd.setVisible(true);
+     if (btnDelete != null) btnDelete.setVisible(true);
+     
+    }
+}  

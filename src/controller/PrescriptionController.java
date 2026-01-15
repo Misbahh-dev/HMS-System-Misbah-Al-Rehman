@@ -135,7 +135,7 @@ public class PrescriptionController {
         this.currentPatientId = null;
         this.currentClinicianId = null;
          this.currentStaffId = null;
-         view.setTitle("Referral Management (Admin Mode)"); 
+         view.setTitle("Prescriptions (Admin Mode)"); 
         refreshView();
     }
 

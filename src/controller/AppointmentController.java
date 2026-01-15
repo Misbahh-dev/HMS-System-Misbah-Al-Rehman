@@ -16,7 +16,7 @@ public class AppointmentController {
     private final ClinicianRepository clinicianRepo;
     private final FacilityRepository facilityRepo;
     private final AppointmentView view;
-    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private String currentPatientId; // For filtering appointments by patient
     private String currentClinicianId; // For filtering appointments by clinician
     private String currentUserRole; // ADDED: Track user role for better access control
@@ -81,6 +81,16 @@ public class AppointmentController {
         view.setTitle("Appointment Management");
         refreshAppointments();
     }
+     public void setAdminView() {
+        this.currentPatientId = null;
+        this.currentClinicianId = null;
+        this.currentUserRole = "ADMIN";
+        
+        view.setReadOnlyMode(false);
+        view.showAllButtons();
+        view.setTitle("Appointment Management (Admin View)");
+        refreshAppointments();
+    }
 
     // ============================================================
     // Set current patient ID for filtering
@@ -92,7 +102,7 @@ public class AppointmentController {
         
         // PATIENT VIEW
         view.setReadOnlyMode(false); // Allow booking new appointments
-        view.showAllButtons(); 
+        view.hideUpdateButton();
         view.setTitle("My Appointments");
         
         refreshAppointments(); // Refresh to show filtered data

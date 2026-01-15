@@ -201,7 +201,7 @@ public class LoginController {
         clinicianController.getView().setTitle("Clinician Management (Admin Mode)");
         appointmentController.setCurrentPatientId(null);
         appointmentController.setCurrentClinicianId(null);
-        appointmentController.getView().setTitle("Appointment Management (Admin Mode)");
+        appointmentController.setAdminView();
         prescriptionController.setAdminView();    
         referralController.setAdminView();     
         staffController.setAdminView();              
