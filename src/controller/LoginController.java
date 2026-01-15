@@ -197,12 +197,15 @@ public class LoginController {
     
     private void setupAdminView (){
          patientController.setCurrentPatientId(null);
+             patientController.getView().setTitle("Patient Management (Admin Mode)");
         clinicianController.setCurrentClinicianId(null);
+        clinicianController.getView().setTitle("Clinician Management (Admin Mode)");
         appointmentController.setCurrentPatientId(null);
         appointmentController.setCurrentClinicianId(null);
-        prescriptionController.setStaffView();        // Admin sees ALL prescriptions (editable)
-        referralController.setStaffView();           // Admin sees ALL referrals (editable)
-    staffController.setAdminView();              
+        appointmentController.getView().setTitle("Appointment Management (Admin Mode)");
+        prescriptionController.setAdminView();    
+        referralController.setAdminView();     
+        staffController.setAdminView();              
     }
     
     

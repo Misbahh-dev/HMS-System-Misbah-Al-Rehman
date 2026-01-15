@@ -131,10 +131,11 @@ public class PrescriptionController {
     // ============================================================
     // NEW: Method for staff to view all prescriptions (admin view)
     // ============================================================
-    public void setStaffView() {
+    public void setAdminView() {
         this.currentPatientId = null;
         this.currentClinicianId = null;
          this.currentStaffId = null;
+         view.setTitle("Referral Management (Admin Mode)"); 
         refreshView();
     }
 

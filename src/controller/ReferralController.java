@@ -102,9 +102,10 @@ public class ReferralController {
     // ============================================================
     // NEW: Method for staff to view all referrals (admin view)
     // ============================================================
-    public void setStaffView() {
+    public void setAdminView() {
         this.currentClinicianId = null;
          view.setReadOnlyMode(false);
+         view.setTitle("Referral Management (Admin Mode)");
         refreshReferrals(null); // Show all referrals
     }
     

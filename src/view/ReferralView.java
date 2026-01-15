@@ -26,6 +26,8 @@ public class ReferralView extends JPanel {
     private JTextArea txtClinicalSummary, txtNotes;
 
     private JFormattedTextField txtReferralDate;
+    
+    private JLabel titleLabel;
 
     // ComboBoxes
     private JComboBox<String> cbPatientId;
@@ -45,9 +47,30 @@ public class ReferralView extends JPanel {
     public ReferralView() {
 
         setLayout(new BorderLayout(10,10));
+        
+        // ============================================================
+        // TITLE PANEL
+        // ============================================================
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        titleLabel = new JLabel("Referral Management");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        titlePanel.add(titleLabel);
+        add(titlePanel, BorderLayout.NORTH);
 
         // ============================================================
-        // TABLE AT TOP — ALL REFERRAL FIELDS
+        // MAIN CONTENT PANEL (holds table and form in vertical layout)
+        // ============================================================
+        JPanel mainContentPanel = new JPanel();
+        mainContentPanel.setLayout(new BoxLayout(mainContentPanel, BoxLayout.Y_AXIS));
+        
+        // ============================================================
+        // TABLE PANEL (with spacing above)
+        // ============================================================
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0)); // Add spacing
+        
+        // ============================================================
+        // TABLE — ALL REFERRAL FIELDS
         // ============================================================
         model = new DefaultTableModel(
                 new Object[]{
@@ -80,8 +103,9 @@ public class ReferralView extends JPanel {
             }
         });
         
-        add(new JScrollPane(table), BorderLayout.NORTH);
-
+        tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        mainContentPanel.add(tablePanel);
+        
         // ============================================================
         // FORM (4-COLUMN GRID)
         // ============================================================
@@ -153,7 +177,12 @@ public class ReferralView extends JPanel {
         formPanel.add(labeled("Created Date:", txtCreatedDate));
         formPanel.add(labeled("Last Updated:", txtLastUpdated));
 
-        add(new JScrollPane(formPanel), BorderLayout.CENTER);
+        JPanel formContainer = new JPanel(new BorderLayout());
+        formContainer.add(new JScrollPane(formPanel), BorderLayout.CENTER);
+        mainContentPanel.add(formContainer);
+        
+        // Add main content panel to center
+        add(mainContentPanel, BorderLayout.CENTER);
 
         // ============================================================
         // BUTTON PANEL
@@ -167,7 +196,7 @@ public class ReferralView extends JPanel {
 
         add(buttonPanel, BorderLayout.WEST);
     }
-
+   
     // ---------- Helper Creators ----------
     private JTextField createField() {
         JTextField f = new JTextField(12);
@@ -207,6 +236,12 @@ public class ReferralView extends JPanel {
         p.add(lbl, BorderLayout.NORTH);
         p.add(field, BorderLayout.CENTER);
         return p;
+    }
+    
+    public void setTitle(String title) {
+        if (titleLabel != null) {
+            titleLabel.setText(title);
+        }
     }
 
     // ============================================================
