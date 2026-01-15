@@ -14,19 +14,19 @@ public class PrescriptionView extends JPanel {
 
     private PrescriptionController controller;
 
+    // Table components for data display
     private JTable table;
     private DefaultTableModel model;
 
+    // Form input fields for prescription data
     private JLabel lblId;
     private JLabel titleLabel;
-
     private JComboBox<String> cbPatientId;
     private JComboBox<String> cbClinicianId;
     private JComboBox<String> cbDrug;
     private JComboBox<String> cbPharmacy;
     private JComboBox<String> cbStatus;
     private JComboBox<String> cbAppointmentId;
-
     private JTextField txtPrescDate;
     private JTextField txtDosage;
     private JTextField txtFrequency;
@@ -34,40 +34,33 @@ public class PrescriptionView extends JPanel {
     private JTextField txtQuantity;
     private JTextField txtIssueDate;
     private JTextField txtCollectionDate;
-
     private JTextArea txtInstructions;
-
-    // Button references
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Action buttons for prescription management
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnDelete;
 
     private boolean readOnlyMode = false;
-
     private static final String DATE_PATTERN = "yyyy-MM-dd";
     private final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
 
     public PrescriptionView() {
+        // Main panel layout with consistent spacing
         setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // ============================================================
-        // TITLE PANEL
-        // ============================================================
+        // Title panel displays current view context
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titleLabel = new JLabel("Prescription Management");
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // ============================================================
-        // MAIN CONTENT PANEL (form and table)
-        // ============================================================
+        // Main content panel with form and table
         JPanel mainContentPanel = new JPanel(new BorderLayout(10, 10));
         
-        // ============================================================
-        // FORM (CENTER - takes more space)
-        // ============================================================
+        // Form panel for prescription data entry
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createTitledBorder("Prescription Details"));
         GridBagConstraints gc = new GridBagConstraints();
@@ -75,15 +68,17 @@ public class PrescriptionView extends JPanel {
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 0.5;
 
+        // Initialize form components
         lblId = new JLabel("RX001");
         lblId.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-        cbPatientId    = new JComboBox<>();
-        cbClinicianId  = new JComboBox<>();
-        cbDrug         = new JComboBox<>();
-        cbPharmacy     = new JComboBox<>();
+        cbPatientId = new JComboBox<>();
+        cbClinicianId = new JComboBox<>();
+        cbDrug = new JComboBox<>();
+        cbPharmacy = new JComboBox<>();
         cbAppointmentId = new JComboBox<>();
 
+        // Status options for prescription lifecycle
         cbStatus = new JComboBox<>(new String[]{
                 "PENDING",
                 "ISSUED",
@@ -93,41 +88,29 @@ public class PrescriptionView extends JPanel {
         });
         cbStatus.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
-        txtPrescDate      = new JTextField();
-        txtDosage         = new JTextField();
-        txtFrequency      = new JTextField();
-        txtDuration       = new JTextField();
-        txtQuantity       = new JTextField();
-        txtIssueDate      = new JTextField();
+        txtPrescDate = new JTextField();
+        txtDosage = new JTextField();
+        txtFrequency = new JTextField();
+        txtDuration = new JTextField();
+        txtQuantity = new JTextField();
+        txtIssueDate = new JTextField();
         txtCollectionDate = new JTextField();
 
-        txtInstructions = new JTextArea(4, 25); // Made text area larger
+        txtInstructions = new JTextArea(4, 25);
         txtInstructions.setLineWrap(true);
         txtInstructions.setWrapStyleWord(true);
 
         int row = 0;
-        addPair(form, gc, row++, "Prescription ID:", lblId,
-                "Patient ID:", cbPatientId);
-
-        addPair(form, gc, row++, "Clinician ID:", cbClinicianId,
-                "Appointment ID:", cbAppointmentId);
-
-        addPair(form, gc, row++, "Prescription Date (yyyy-MM-dd):", txtPrescDate,
-                "Drug:", cbDrug);
-
-        addPair(form, gc, row++, "Dosage:", txtDosage,
-                "Frequency:", txtFrequency);
-
-        addPair(form, gc, row++, "Duration (days):", txtDuration,
-                "Quantity:", txtQuantity);
-
-        addPair(form, gc, row++, "Pharmacy:", cbPharmacy,
-                "Status:", cbStatus);
-
+        addPair(form, gc, row++, "Prescription ID:", lblId, "Patient ID:", cbPatientId);
+        addPair(form, gc, row++, "Clinician ID:", cbClinicianId, "Appointment ID:", cbAppointmentId);
+        addPair(form, gc, row++, "Prescription Date (yyyy-MM-dd):", txtPrescDate, "Drug:", cbDrug);
+        addPair(form, gc, row++, "Dosage:", txtDosage, "Frequency:", txtFrequency);
+        addPair(form, gc, row++, "Duration (days):", txtDuration, "Quantity:", txtQuantity);
+        addPair(form, gc, row++, "Pharmacy:", cbPharmacy, "Status:", cbStatus);
         addPair(form, gc, row++, "Issue Date (yyyy-MM-dd):", txtIssueDate,
                 "Collection Date (yyyy-MM-dd):", txtCollectionDate);
 
-        // Instructions field - made larger
+        // Instructions field with scroll pane
         gc.gridy = row;
         gc.gridx = 0;
         gc.gridwidth = 1;
@@ -142,9 +125,7 @@ public class PrescriptionView extends JPanel {
         JScrollPane formScrollPane = new JScrollPane(form);
         mainContentPanel.add(formScrollPane, BorderLayout.CENTER);
 
-        // ============================================================
-        // TABLE (SOUTH)
-        // ============================================================
+        // Table setup for prescription data display
         model = new DefaultTableModel(
                 new Object[]{
                         "ID", "Patient", "Clinician", "Appt",
@@ -155,7 +136,7 @@ public class PrescriptionView extends JPanel {
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // Prevent direct table editing
             }
         };
         table = new JTable(model);
@@ -167,9 +148,7 @@ public class PrescriptionView extends JPanel {
 
         add(mainContentPanel, BorderLayout.CENTER);
 
-        // ============================================================
-        // BUTTONS PANEL (EAST - VERTICAL LAYOUT)
-        // ============================================================
+        // Action buttons panel with vertical arrangement
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
@@ -178,7 +157,7 @@ public class PrescriptionView extends JPanel {
         btnUpdate = new JButton("Update Selected");
         btnDelete = new JButton("Delete Selected");
 
-        // Set smaller button size
+        // Standardize button dimensions for consistent UI
         Dimension buttonSize = new Dimension(120, 30);
         btnAdd.setPreferredSize(buttonSize);
         btnAdd.setMaximumSize(buttonSize);
@@ -187,11 +166,12 @@ public class PrescriptionView extends JPanel {
         btnDelete.setPreferredSize(buttonSize);
         btnDelete.setMaximumSize(buttonSize);
 
+        // Connect buttons to action handlers
         btnAdd.addActionListener(e -> onAdd());
         btnUpdate.addActionListener(e -> onUpdate());
         btnDelete.addActionListener(e -> onDelete());
 
-        // Add vertical spacing between buttons
+        // Arrange buttons vertically with spacing
         buttonPanel.add(Box.createVerticalStrut(10));
         buttonPanel.add(btnAdd);
         buttonPanel.add(Box.createVerticalStrut(15));
@@ -202,42 +182,43 @@ public class PrescriptionView extends JPanel {
 
         add(buttonPanel, BorderLayout.EAST);
 
-        // Table selection listener
+        // Load selected row data into form when table selection changes
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) loadSelectedRowIntoForm();
         });
 
-        // Initial UI state
+        // Initial UI state configuration
         updateUIState();
     }
 
-    // ============================================================
-    // UI STATE METHODS
-    // ============================================================
-    
+    // Configures form for read-only or editable mode
     public void setReadOnlyMode(boolean readOnly) {
         this.readOnlyMode = readOnly;
         updateUIState();
     }
     
+    // Shows all action buttons (admin view)
     public void showAddUpdateButtons() {
         if (btnAdd != null) btnAdd.setVisible(true);
         if (btnUpdate != null) btnUpdate.setVisible(true);
         if (btnDelete != null) btnDelete.setVisible(true);
     }
     
+    // Hides add and update buttons (read-only view)
     public void hideAddUpdateButtons() {
         if (btnAdd != null) btnAdd.setVisible(false);
         if (btnUpdate != null) btnUpdate.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);
     }
     
+    // Updates view title based on user role
     public void setTitle(String title) {
         if (titleLabel != null) {
             titleLabel.setText(title);
         }
     }
     
+    // Updates UI state based on read-only mode
     private void updateUIState() {
         boolean editable = !readOnlyMode;
         
@@ -264,30 +245,28 @@ public class PrescriptionView extends JPanel {
         }
     }
     
+    // Helper method for form layout arrangement
     private void addPair(JPanel panel, GridBagConstraints gc, int row,
                          String label1, JComponent field1,
                          String label2, JComponent field2) {
 
         gc.gridy = row;
-
         gc.gridx = 0;
         panel.add(new JLabel(label1), gc);
         gc.gridx = 1;
         panel.add(field1, gc);
-
         gc.gridx = 2;
         panel.add(new JLabel(label2), gc);
         gc.gridx = 3;
         panel.add(field2, gc);
     }
 
-    // ============================================================
-    // Controller Hooks
-    // ============================================================
+    // Establishes connection to controller for business logic
     public void setController(PrescriptionController controller) {
         this.controller = controller;
     }
 
+    // Populates dropdowns with available data options
     public void populateDropdowns(List<String> patientIds,
                                   List<String> clinicianIds,
                                   List<String> drugs,
@@ -310,10 +289,12 @@ public class PrescriptionView extends JPanel {
         for (String ap : appointmentIds) cbAppointmentId.addItem(ap);
     }
 
+    // Sets next available prescription ID for new entries
     public void setNextId(String id) {
         lblId.setText(id);
     }
 
+    // Populates table with prescription list data
     public void showPrescriptions(List<Prescription> list) {
         model.setRowCount(0);
         for (Prescription p : list) {
@@ -337,9 +318,7 @@ public class PrescriptionView extends JPanel {
         }
     }
 
-    // ============================================================
-    // BUTTON HANDLERS
-    // ============================================================
+    // Handles addition of new prescription record
     private void onAdd() {
         if (controller == null) return;
 
@@ -355,6 +334,7 @@ public class PrescriptionView extends JPanel {
         clearFormButKeepIds();
     }
 
+    // Handles updating of existing prescription record
     private void onUpdate() {
         if (controller == null) return;
 
@@ -376,6 +356,7 @@ public class PrescriptionView extends JPanel {
         controller.updatePrescription(p);
     }
 
+    // Handles deletion of selected prescription record
     private void onDelete() {
         if (controller == null) return;
 
@@ -389,9 +370,7 @@ public class PrescriptionView extends JPanel {
         controller.deleteById(id);
     }
 
-    // ============================================================
-    // Build Model from Form
-    // ============================================================
+    // Constructs Prescription object from form data
     private Prescription buildFromForm(String id) {
         return new Prescription(
                 id,
@@ -412,9 +391,7 @@ public class PrescriptionView extends JPanel {
         );
     }
 
-    // ============================================================
-    // Load selected table row → form
-    // ============================================================
+    // Loads selected table row data into form fields
     private void loadSelectedRowIntoForm() {
         int row = table.getSelectedRow();
         if (row < 0) return;
@@ -422,7 +399,6 @@ public class PrescriptionView extends JPanel {
         lblId.setText(model.getValueAt(row, 0).toString());
         cbPatientId.setSelectedItem(model.getValueAt(row, 1));
         cbClinicianId.setSelectedItem(model.getValueAt(row, 2));
-
         cbAppointmentId.setSelectedItem(model.getValueAt(row, 3));
         txtPrescDate.setText(value(row, 4));
         cbDrug.setSelectedItem(model.getValueAt(row, 5));
@@ -437,14 +413,13 @@ public class PrescriptionView extends JPanel {
         txtCollectionDate.setText(value(row, 14));
     }
 
+    // Safely retrieves table cell values
     private String value(int row, int col) {
         Object v = model.getValueAt(row, col);
         return v == null ? "" : v.toString();
     }
 
-    // ============================================================
-    // VALIDATION
-    // ============================================================
+    // Validates form input for required fields and data formats
     private String validateForm() {
         StringBuilder sb = new StringBuilder();
 
@@ -483,6 +458,7 @@ public class PrescriptionView extends JPanel {
         return sb.toString();
     }
 
+    // Validates date format for date fields
     private void checkDate(String value, String label, StringBuilder sb) {
         if (value.isEmpty()) return;
         sdf.setLenient(false);
@@ -493,6 +469,7 @@ public class PrescriptionView extends JPanel {
         }
     }
 
+    // Resets form fields while preserving ID values
     private void clearFormButKeepIds() {
         txtPrescDate.setText("");
         txtDosage.setText("");

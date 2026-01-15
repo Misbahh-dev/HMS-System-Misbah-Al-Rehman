@@ -14,44 +14,43 @@ import java.util.List;
 
 public class ClinicianView extends JPanel {
 
+    // Controller for business logic operations
     private ClinicianController controller;
 
+    // Table components for data display
     private JTable table;
     private DefaultTableModel model;
-
-    // Form components
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Form input fields for clinician data
     private JLabel lblId;
-    private JLabel titleLabel; // Added for setting title
+    private JLabel titleLabel;
     private JTextField txtFirstName, txtLastName, txtSpeciality, txtGmc, txtPhone, txtEmail, txtWorkplaceId;
     private JComboBox<String> cmbTitle, cmbWorkplaceType, cmbEmployment;
     private JSpinner dateSpinner;
     
-    // Button references
+    // Action buttons for clinician management
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnDelete;
     private JPanel buttonsPanel;
     
-    // Date formatter
+    // Date formatting utility for consistent display
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public ClinicianView() {
 
+        // Main panel layout with spacing
         setLayout(new BorderLayout(15, 15));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // ============================================================
-        // TITLE PANEL (ADDED)
-        // ============================================================
+        // Title panel displays current view context
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titleLabel = new JLabel("Clinician Management");
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // ============================================================
-        // TABLE
-        // ============================================================
+        // Table setup for clinician data display
         model = new DefaultTableModel(
                 new Object[]{
                         "ID", "Title", "First", "Last", "Speciality", "GMC",
@@ -61,7 +60,7 @@ public class ClinicianView extends JPanel {
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false; // Prevent direct table editing
             }
         };
 
@@ -71,15 +70,14 @@ public class ClinicianView extends JPanel {
         tableScrollPane.setPreferredSize(new Dimension(800, 200));
         add(tableScrollPane, BorderLayout.SOUTH);
 
-        // ============================================================
-        // FORM PANEL (4 COLUMNS)
-        // ============================================================
+        // Form panel for data entry with four-column layout
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createTitledBorder("Clinician Information"));
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(10, 15, 10, 15);
         gc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Initialize form components
         lblId = new JLabel("C001");
         lblId.setFont(new Font("SansSerif", Font.BOLD, 12));
 
@@ -91,16 +89,18 @@ public class ClinicianView extends JPanel {
         txtEmail = new JTextField();
         txtWorkplaceId = new JTextField();
 
+        // Dropdown options for categorical fields
         cmbTitle = new JComboBox<>(new String[]{"GP", "Consultant", "Nurse", "Specialist", "Senior Nurse", "Practice Nurse", "Staff Nurse"});
         cmbWorkplaceType = new JComboBox<>(new String[]{"GP Surgery", "Hospital", "Clinic"});
         cmbEmployment = new JComboBox<>(new String[]{"Full-time", "Part-time", "Locum"});
 
+        // Date selector with standard format
         dateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
         dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd"));
 
         int row = 0;
 
-        // ============================  4 COLUMNS  ============================
+        // Arrange form fields in four-column layout
         add4(form, gc, row++, "Clinician ID:", lblId, "Title:", cmbTitle);
         add4(form, gc, row++, "First Name:", txtFirstName, "Last Name:", txtLastName);
         add4(form, gc, row++, "Speciality:", txtSpeciality, "GMC Number:", txtGmc);
@@ -112,9 +112,7 @@ public class ClinicianView extends JPanel {
         formScrollPane.setPreferredSize(new Dimension(800, 300));
         add(formScrollPane, BorderLayout.CENTER);
 
-        // ============================================================
-        // BUTTON PANEL (MODIFIED)
-        // ============================================================
+        // Action buttons panel with vertical arrangement
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
         buttonsPanel.setBorder(BorderFactory.createTitledBorder("Actions"));
@@ -123,7 +121,7 @@ public class ClinicianView extends JPanel {
         btnUpdate = new JButton("Update Selected");
         btnDelete = new JButton("Delete Selected");
         
-        // Set preferred sizes for vertical alignment
+        // Standardize button dimensions for consistent UI
         Dimension buttonSize = new Dimension(150, 35);
         btnAdd.setPreferredSize(buttonSize);
         btnAdd.setMaximumSize(buttonSize);
@@ -132,12 +130,12 @@ public class ClinicianView extends JPanel {
         btnDelete.setPreferredSize(buttonSize);
         btnDelete.setMaximumSize(buttonSize);
         
-        // Add action listeners
+        // Connect buttons to action handlers
         btnAdd.addActionListener(e -> onAdd());
         btnUpdate.addActionListener(e -> onUpdate());
         btnDelete.addActionListener(e -> onDelete());
         
-        // Add vertical spacing
+        // Arrange buttons vertically with spacing
         buttonsPanel.add(Box.createVerticalStrut(10));
         buttonsPanel.add(btnAdd);
         buttonsPanel.add(Box.createVerticalStrut(10));
@@ -148,9 +146,7 @@ public class ClinicianView extends JPanel {
         
         add(buttonsPanel, BorderLayout.EAST);
         
-        // ============================================================
-        // TABLE SELECTION LISTENER (ADDED)
-        // ============================================================
+        // Load selected row data into form when table selection changes
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 loadSelectedRowIntoForm();
@@ -158,44 +154,40 @@ public class ClinicianView extends JPanel {
         });
     }
 
-    // Helper for 4-column rows
+    // Helper method for four-column form layout arrangement
     private void add4(JPanel panel, GridBagConstraints gc, int row,
                       String label1, JComponent field1,
                       String label2, JComponent field2) {
 
         gc.gridy = row;
 
-        // Left label
+        // Left column label positioning
         gc.gridx = 0;
         gc.weightx = 0.15;
         panel.add(new JLabel(label1), gc);
 
-        // Left field
+        // Left column input field positioning
         gc.gridx = 1;
         gc.weightx = 0.35;
         panel.add(field1, gc);
 
-        // Right label
+        // Right column label positioning
         gc.gridx = 2;
         gc.weightx = 0.15;
         panel.add(new JLabel(label2), gc);
 
-        // Right field
+        // Right column input field positioning
         gc.gridx = 3;
         gc.weightx = 0.35;
         panel.add(field2, gc);
     }
 
-    // ============================================================
-    // CONTROLLER LINK
-    // ============================================================
+    // Establishes connection to controller for business logic
     public void setController(ClinicianController controller) {
         this.controller = controller;
     }
 
-    // ============================================================
-    // DISPLAY DATA
-    // ============================================================
+    // Populates table with clinician list data
     public void showClinicians(List<Clinician> list) {
         model.setRowCount(0);
 
@@ -209,13 +201,11 @@ public class ClinicianView extends JPanel {
         }
     }
 
-    // ============================================================
-    // ADD NEW CLINICIAN
-    // ============================================================
+    // Handles addition of new clinician record
     private void onAdd() {
         if (controller == null) return;
         
-        // Validate form
+        // Validate input before proceeding
         if (!validateForm()) {
             return;
         }
@@ -239,9 +229,7 @@ public class ClinicianView extends JPanel {
         clearForm();
     }
     
-    // ============================================================
-    // UPDATE CLINICIAN (ADDED)
-    // ============================================================
+    // Handles updating of existing clinician record
     private void onUpdate() {
         if (controller == null) return;
         
@@ -254,7 +242,7 @@ public class ClinicianView extends JPanel {
             return;
         }
         
-        // Validate form
+        // Validate input before proceeding
         if (!validateForm()) {
             return;
         }
@@ -274,25 +262,10 @@ public class ClinicianView extends JPanel {
                 dateFormat.format(dateSpinner.getValue())
         );
         
-        // Call update method in controller (make sure this method exists in ClinicianController)
-        if (controller != null) {
-            // You might need to add an updateClinician method to your controller
-            // For now, we'll call a method that might exist
-            try {
-                // Try to call updateClinician if it exists
-                controller.getClass().getMethod("updateClinician", Clinician.class).invoke(controller, c);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,
-                    "Update functionality not available yet.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        controller.updateClinician(c);
     }
 
-    // ============================================================
-    // DELETE CLINICIAN
-    // ============================================================
+    // Handles deletion of selected clinician record
     private void onDelete() {
         if (controller == null) return;
 
@@ -307,7 +280,7 @@ public class ClinicianView extends JPanel {
         String id = (String) model.getValueAt(row, 0);
         String name = getValue(row, 2) + " " + getValue(row, 3);
         
-        // Ask for confirmation
+        // Confirmation dialog for deletion
         int confirm = JOptionPane.showConfirmDialog(this,
             "Are you sure you want to delete clinician:\n" + 
             "ID: " + id + "\n" +
@@ -322,9 +295,7 @@ public class ClinicianView extends JPanel {
         }
     }
     
-    // ============================================================
-    // LOAD SELECTED ROW INTO FORM (ADDED)
-    // ============================================================
+    // Loads selected table row data into form fields
     private void loadSelectedRowIntoForm() {
         int row = table.getSelectedRow();
         if (row < 0) return;
@@ -341,27 +312,25 @@ public class ClinicianView extends JPanel {
         cmbWorkplaceType.setSelectedItem(getValue(row, 9));
         cmbEmployment.setSelectedItem(getValue(row, 10));
         
-        // Handle date parsing
+        // Parse and set date value
         String dateStr = getValue(row, 11);
         if (!dateStr.isEmpty()) {
             try {
                 Date date = dateFormat.parse(dateStr);
                 dateSpinner.setValue(date);
             } catch (ParseException e) {
-                // If date parsing fails, keep current date
                 System.err.println("Failed to parse date: " + dateStr);
             }
         }
     }
     
+    // Safely retrieves table cell values
     private String getValue(int row, int col) {
         Object value = model.getValueAt(row, col);
         return value == null ? "" : value.toString();
     }
     
-    // ============================================================
-    // VALIDATION (ADDED)
-    // ============================================================
+    // Validates form input for required fields
     private boolean validateForm() {
         StringBuilder errors = new StringBuilder();
         
@@ -389,9 +358,7 @@ public class ClinicianView extends JPanel {
         return true;
     }
     
-    // ============================================================
-    // CLEAR FORM (ADDED)
-    // ============================================================
+    // Resets form fields to default empty state
     private void clearForm() {
         txtFirstName.setText("");
         txtLastName.setText("");
@@ -404,16 +371,10 @@ public class ClinicianView extends JPanel {
         cmbWorkplaceType.setSelectedIndex(0);
         cmbEmployment.setSelectedIndex(0);
         dateSpinner.setValue(new Date());
-        
-        // Don't clear the ID - let controller set it
     }
     
-    // ============================================================
-    // METHODS NEEDED BY CONTROLLER (ADDED)
-    // ============================================================
-    
+    // Configures form for read-only or editable mode
     public void setReadOnlyMode(boolean readOnly) {
-        // Enable/disable all input components
         txtFirstName.setEditable(!readOnly);
         txtLastName.setEditable(!readOnly);
         txtSpeciality.setEditable(!readOnly);
@@ -428,37 +389,40 @@ public class ClinicianView extends JPanel {
         dateSpinner.setEnabled(!readOnly);
     }
     
+    // Hides add and delete buttons (clinician view)
     public void hideAddDeleteButtons() {
         if (btnAdd != null) btnAdd.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);
-        if (btnUpdate != null) btnUpdate.setVisible(true); // Keep update button visible
+        if (btnUpdate != null) btnUpdate.setVisible(true);
     }
     
+    // Shows update button explicitly
     public void showUpdateButton() {
         if (btnUpdate != null) btnUpdate.setVisible(true);
     }
     
+    // Shows all action buttons (admin view)
     public void showAllButtons() {
         if (btnAdd != null) btnAdd.setVisible(true);
         if (btnUpdate != null) btnUpdate.setVisible(true);
         if (btnDelete != null) btnDelete.setVisible(true);
     }
     
+    // Updates view title based on user role
     public void setTitle(String title) {
         if (titleLabel != null) {
             titleLabel.setText(title);
         }
     }
     
+    // Sets next available clinician ID for new entries
     public void setNextId(String id) {
         if (lblId != null) {
             lblId.setText(id);
         }
     }
     
-    // ============================================================
-    // ADDITIONAL HELPER METHOD (Optional)
-    // ============================================================
+    // Hides all action buttons (initial state)
     public void hideAllButtons() {
         if (btnAdd != null) btnAdd.setVisible(false);
         if (btnUpdate != null) btnUpdate.setVisible(false);

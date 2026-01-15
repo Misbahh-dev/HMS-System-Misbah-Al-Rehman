@@ -6,7 +6,7 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
     private JTabbedPane tabs;
-    private String userRole; // Store user role
+    private String userRole;
     
     public MainFrame(
             PatientController pc,
@@ -20,25 +20,21 @@ public class MainFrame extends JFrame {
         super("Healthcare Management System");
         this.userRole = userRole;
 
-        // ============================================================
-        // CREATE MAIN PANEL WITH BORDERLAYOUT
-        // ============================================================
+        // Main panel with border layout for structured arrangement
         JPanel mainPanel = new JPanel(new BorderLayout());
         
-        // ============================================================
-        // TOP PANEL WITH TITLE AND LOGOUT BUTTON
-        // ============================================================
+        // Top panel contains title and logout controls
         JPanel topPanel = new JPanel(new BorderLayout(10, 10));
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         topPanel.setBackground(new Color(240, 240, 240));
         
-        // Title on left
+        // Application title with role context
         JLabel titleLabel = new JLabel("HMS - " + userRole.toUpperCase() + " Portal");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setForeground(new Color(0, 102, 204));
         topPanel.add(titleLabel, BorderLayout.WEST);
         
-        // Logout button on right
+        // Logout button with visual prominence
         JButton logoutButton = new JButton("Logout");
         logoutButton.setBackground(new Color(220, 53, 69));
         logoutButton.setForeground(Color.WHITE);
@@ -46,33 +42,25 @@ public class MainFrame extends JFrame {
         logoutButton.addActionListener(e -> performLogout());
         topPanel.add(logoutButton, BorderLayout.EAST);
         
-        // ============================================================
-        // TABBED PANEL
-        // ============================================================
+        // Tabbed interface for module navigation
         tabs = new JTabbedPane();
         addTabsBasedOnRole(pc, cc, ac, prc, rc, sc, userRole);
         
-        // ============================================================
-        // ASSEMBLE MAIN PANEL
-        // ============================================================
+        // Assemble complete interface layout
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(tabs, BorderLayout.CENTER);
         
-        // ============================================================
-        // SET CONTENT AND WINDOW PROPERTIES
-        // ============================================================
+        // Configure window properties and display
         setContentPane(mainPanel);
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
-        // Show access message
+        // Display role-specific access information
         showAccessMessage(userRole);
     }
     
-    // ============================================================
-    // LOGOUT METHOD
-    // ============================================================
+    // Handles user logout with confirmation
     private void performLogout() {
         int confirm = JOptionPane.showConfirmDialog(this,
             "Are you sure you want to logout?\n\n" +
@@ -80,24 +68,20 @@ public class MainFrame extends JFrame {
             "Confirm Logout",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE);
-        
+        //Made By Misbah Al Rehman. SRN: 24173647
         if (confirm == JOptionPane.YES_OPTION) {
-            this.dispose(); // Close current window
+            this.dispose();
             
-            // Show logout message
             JOptionPane.showMessageDialog(null,
                 "You have been logged out successfully.\n",
                 "Logout Complete",
                 JOptionPane.INFORMATION_MESSAGE);
             
-            // Exit application (simplest for now)
             System.exit(0);
         }
     }
     
-    // ============================================================
-    // NEW METHOD: ADD ONLY TABS USER CAN ACCESS
-    // ============================================================
+    // Configures tab visibility based on user role permissions
     private void addTabsBasedOnRole(
             PatientController pc,
             ClinicianController cc,
@@ -108,21 +92,19 @@ public class MainFrame extends JFrame {
             String userRole) {
         
         if (userRole == null) {
-            userRole = "guest"; // Default if no role
+            userRole = "guest";
         }
         
         String role = userRole.toLowerCase();
         
         switch (role) {
             case "patient":
-                // Patients can only see Appointments and Prescriptions
                 tabs.addTab("My Appointments", ac.getView());
                 tabs.addTab("My Prescriptions", prc.getView());
                 tabs.addTab("My Profile", pc.getView());
                 break;
                 
             case "clinician":
-                // Clinicians can manage everything except Clinician records
                 tabs.addTab("Patients", pc.getView());
                 tabs.addTab("Appointments", ac.getView());
                 tabs.addTab("Prescriptions", prc.getView());
@@ -140,7 +122,6 @@ public class MainFrame extends JFrame {
                 break;
                 
             case "admin":
-                // Staff and Admin can see everything
                 tabs.addTab("Patients", pc.getView());
                 tabs.addTab("Clinicians", cc.getView());
                 tabs.addTab("Appointments", ac.getView());
@@ -150,7 +131,6 @@ public class MainFrame extends JFrame {
                 break;
                 
             default:
-                // Guest/Unknown: Show all tabs
                 tabs.addTab("Patients", pc.getView());
                 tabs.addTab("Clinicians", cc.getView());
                 tabs.addTab("Appointments", ac.getView());
@@ -160,9 +140,7 @@ public class MainFrame extends JFrame {
         }
     }
     
-    // ============================================================
-    // UPDATED METHOD: SHOW ACCESS MESSAGE
-    // ============================================================
+    // Displays role-specific access information
     private void showAccessMessage(String userRole) {
         String role = (userRole != null) ? userRole.toLowerCase() : "guest";
         String message = "";
@@ -194,7 +172,7 @@ public class MainFrame extends JFrame {
             JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // Optional: Method to programmatically switch tabs
+    // Programmatically switches to specified tab
     public void switchToTab(String tabName) {
         for (int i = 0; i < tabs.getTabCount(); i++) {
             if (tabs.getTitleAt(i).equals(tabName)) {

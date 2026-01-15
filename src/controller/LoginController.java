@@ -5,16 +5,19 @@ import model.LoginRepository;
 import view.LoginView;
 import view.MainFrame;
 import javax.swing.*;
-
+//Made By Misbah Al Rehman. SRN: 24173647
 public class LoginController {
+    // UI component for login interactions
     private LoginView view;
+    // Data repository for credential validation
     private LoginRepository repository;
+    // User session tracking variables
     private boolean isAuthenticated = false;
     private String currentUserRole;
     private Object currentUser;
-    private String currentUserId; // Store userId at class level
+    private String currentUserId;
     
-    // Store references to main controllers (will be set from Main.java)
+    // References to main application controllers
     private PatientController patientController;
     private ClinicianController clinicianController;
     private AppointmentController appointmentController;
@@ -22,13 +25,14 @@ public class LoginController {
     private ReferralController referralController;
     private StaffController staffController;   
     
+    // Initializes controller with view and repository
     public LoginController(LoginView view, LoginRepository repository) {
         this.view = view;
         this.repository = repository;
         initController();
     }
     
-    // Set main controllers (called from Main.java)
+    // Receives main controllers from application startup
     public void setMainControllers(
             PatientController pc,
             ClinicianController cc,
@@ -45,37 +49,40 @@ public class LoginController {
         this.staffController = sc;
     }
 
+    // Sets up login button action listener
     private void initController() {
         view.setLoginListener(e -> performLogin());
     }
 
+    // Validates credentials and initiates user session
     private void performLogin() {
         String userId = view.getUserId();
         String password = view.getPassword();
         String selectedRole = view.getSelectedRole();
 
+        // Validate all form fields are completed
         if (userId.isEmpty() || password.isEmpty() || selectedRole.isEmpty()) {
             view.showMessage("Please fill all fields!", true);
             return;
         }
 
+        // Authenticate user against repository data
         Login user = repository.authenticate(userId, password);
         
         if (user != null) {
+            // Verify selected role matches actual user role
             if (user.getRole().equalsIgnoreCase(selectedRole)) {
                 isAuthenticated = true;
                 currentUserRole = user.getRole();
                 currentUser = user.getUserObject();
-                currentUserId = userId; // Store userId at class level
+                currentUserId = userId;
                 
                 view.showMessage("Login successful! Welcome " + userId, false);
                 
-                // Close login window and open MainFrame
+                // Transition to main application interface
                 SwingUtilities.invokeLater(() -> {
-                    // Get the login window (JFrame) that contains this view
                     JFrame loginWindow = (JFrame) SwingUtilities.getWindowAncestor(view);
                     
-                    // Show success message
                     JOptionPane.showMessageDialog(loginWindow,
                         "Welcome " + currentUserRole.toUpperCase() + "!\n" +
                         "User ID: " + currentUserId + "\n" +
@@ -83,12 +90,11 @@ public class LoginController {
                         "Login Successful", 
                         JOptionPane.INFORMATION_MESSAGE);
                     
-                    // Close login window
+                    // Close login window and launch main application
                     if (loginWindow != null) {
                         loginWindow.dispose();
                     }
                     
-                    // Open MainFrame
                     openMainApplication();
                 });
                 
@@ -100,8 +106,9 @@ public class LoginController {
         }
     }
 
-    // Open main application after successful login
+    // Launches main application after successful authentication
     private void openMainApplication() {
+        // Verify all controllers are properly initialized
         if (patientController == null || clinicianController == null || 
             appointmentController == null || prescriptionController == null || 
             referralController == null ||staffController == null) {
@@ -113,22 +120,21 @@ public class LoginController {
             return;
         }
         
-        // ============================================================
-        // SETUP CONTROLLERS BASED ON USER ROLE
-        // ============================================================
-  if ("patient".equals(currentUserRole)) {
-    setupPatientView();
-} else if ("clinician".equals(currentUserRole)) {
-    setupClinicianView();
-} else if ("staff".equals(currentUserRole)) {
-    setupStaffView(); // Regular staff (read-only)
-} else if ("admin".equals(currentUserRole)) {
-    setupAdminView(); // Admin (full edit access)
-} else {
-    // Default to staff view for unknown roles
-    setupStaffView();
-}
-        // Create and show MainFrame with user role
+        // Configure controllers based on authenticated user role
+        if ("patient".equals(currentUserRole)) {
+            setupPatientView();
+        } else if ("clinician".equals(currentUserRole)) {
+            setupClinicianView();
+        } else if ("staff".equals(currentUserRole)) {
+            setupStaffView();
+        } else if ("admin".equals(currentUserRole)) {
+            setupAdminView();
+        } else {
+            // Fallback to staff view for unrecognized roles
+            setupStaffView();
+        }
+        
+        // Create and display main application window
         MainFrame mainFrame = new MainFrame(
             patientController,
             clinicianController,
@@ -136,12 +142,12 @@ public class LoginController {
             prescriptionController,
             referralController,
             staffController,    
-            currentUserRole  // Pass user role for access control
+            currentUserRole
         );
         
         mainFrame.setVisible(true);
         
-        // Show welcome message in main app
+        // Display welcome message with access details
         JOptionPane.showMessageDialog(mainFrame,
             "Welcome to Healthcare Management System!\n" +
             "Role: " + currentUserRole.toUpperCase() + "\n" +
@@ -151,52 +157,41 @@ public class LoginController {
             JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // ============================================================
-    // SETUP PATIENT VIEW
-    // ============================================================
+    // Configures patient-specific view and permissions
     private void setupPatientView() {
-        // For patients, filter to show only their own data
+        // Patients can only access their own records
         patientController.setCurrentPatientId(currentUserId);
         appointmentController.setCurrentPatientId(currentUserId);
         prescriptionController.setCurrentPatientId(currentUserId);
-        
-        // Patients typically don't need clinician or referral access
         clinicianController.setCurrentClinicianId(null);
     }
     
-    // ============================================================
-    // SETUP CLINICIAN VIEW
-    // ============================================================
+    // Configures clinician-specific view and permissions
     private void setupClinicianView() {
-        // For clinicians, filter to show only their related data
+        // Clinicians can access their assigned patients and records
         clinicianController.setCurrentClinicianId(currentUserId);
         appointmentController.setCurrentClinicianId(currentUserId);
         prescriptionController.setCurrentClinicianId(currentUserId);
-        
-        // KEY: Set current clinician ID in referral controller
-        referralController.setCurrentClinicianId(currentUserId);  // ADD THIS LINE
-        
-        // Clinicians see only THEIR PATIENTS (based on appointments)
+        referralController.setCurrentClinicianId(currentUserId);
         patientController.setCurrentClinicianId(currentUserId);
     }
     
-    // ============================================================
-    // SETUP STAFF/ADMIN VIEW
-    // ============================================================
+    // Configures staff view with read-only permissions
     private void setupStaffView() {
-        // Staff/Admin see all data (no filtering)
+        // Staff can view all records but with limited edit rights
         patientController.setCurrentPatientId(null);
         clinicianController.setCurrentClinicianId(null);
         appointmentController.setStaffView();
-       prescriptionController.setCurrentStaffId(currentUserId);  // Shows ALL prescriptions
-        referralController.setCurrentStaffId(currentUserId);      // Shows ALL referrals
+        prescriptionController.setCurrentStaffId(currentUserId);
+        referralController.setCurrentStaffId(currentUserId);
         staffController.setCurrentStaffId(currentUserId);
-        
     }
     
-    private void setupAdminView (){
-         patientController.setCurrentPatientId(null);
-             patientController.getView().setTitle("Patient Management (Admin Mode)");
+    // Configures administrator view with full system access
+    private void setupAdminView(){
+        // Administrators have complete system control
+        patientController.setCurrentPatientId(null);
+        patientController.getView().setTitle("Patient Management (Admin Mode)");
         clinicianController.setCurrentClinicianId(null);
         clinicianController.getView().setTitle("Clinician Management (Admin Mode)");
         appointmentController.setCurrentPatientId(null);
@@ -207,10 +202,7 @@ public class LoginController {
         staffController.setAdminView();              
     }
     
-    
-  
-    
-    // Describe access level based on role
+    // Returns user-friendly access level description
     private String getAccessDescription(String role) {
         switch (role.toLowerCase()) {
             case "patient":
@@ -226,19 +218,15 @@ public class LoginController {
         }
     }
     
-    // ============================================================
-    // GETTER FOR CURRENT USER ID
-    // ============================================================
+    // Returns current authenticated user identifier
     public String getCurrentUserId() {
         return currentUserId;
     }
     
-    // Getter for the view
     public LoginView getView() {
         return view;
     }
     
-    // Getters for authentication state
     public boolean isAuthenticated() { 
         return isAuthenticated; 
     }
@@ -250,5 +238,4 @@ public class LoginController {
     public Object getCurrentUser() { 
         return currentUser; 
     }
-    
 }

@@ -6,36 +6,41 @@ import java.util.List;
 
 public class ClinicianRepository {
 
+    // In-memory storage for clinician records
     private final List<Clinician> clinicians = new ArrayList<>();
+    // File system path for CSV persistence
     private final String csvPath;
 
+    // Constructor - loads data from CSV file on initialization
     public ClinicianRepository(String csvPath) {
         this.csvPath = csvPath;
         load();
     }
     
+    // Returns all clinician identifiers for reference purposes
     public List<String> getAllIds() {
         List<String> ids = new ArrayList<>();
         for (Clinician c : clinicians) ids.add(c.getId());
         return ids;
     }
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Loads clinician data from CSV file into memory
     private void load() {
         try {
             for (String[] row : CsvUtils.readCsv(csvPath)) {
                 Clinician c = new Clinician(
-                        row[0],   // id
-                        row[1],   // title
-                        row[2],   // first
-                        row[3],   // last
-                        row[4],   // speciality
-                        row[5],   // gmc
-                        row[6],   // phone
-                        row[7],   // email
-                        row[8],   // workplace id
-                        row[9],   // workplace type
-                        row[10],  // employment
-                        row[11]   // start date
+                        row[0],   // id - unique clinician identifier
+                        row[1],   // title - professional designation
+                        row[2],   // first - given name
+                        row[3],   // last - family name
+                        row[4],   // speciality - medical specialty
+                        row[5],   // gmc - registration number
+                        row[6],   // phone - contact number
+                        row[7],   // email - professional email
+                        row[8],   // workplace id - facility identifier
+                        row[9],   // workplace type - facility category
+                        row[10],  // employment - current status
+                        row[11]   // start date - employment commencement
                 );
                 clinicians.add(c);
             }
@@ -44,13 +49,12 @@ public class ClinicianRepository {
         }
     }
 
-    // ============================================================
-    // AUTO-ID: C001 → C002 → C003...
-    // ============================================================
+    // Generates next sequential clinician identifier
     public String generateNewId() {
         int max = 0;
         for (Clinician c : clinicians) {
             try {
+                // Extract numeric portion from ID (e.g., "C001" → 1)
                 int n = Integer.parseInt(c.getId().substring(1));
                 if (n > max) max = n;
             } catch (Exception ignored) {}
@@ -58,9 +62,7 @@ public class ClinicianRepository {
         return String.format("C%03d", max + 1);
     }
 
-    // ============================================================
-    // ADD + APPEND TO CSV
-    // ============================================================
+    // Adds clinician to memory and appends to CSV file
     public void addAndAppend(Clinician c) {
         clinicians.add(c);
         try {
@@ -75,42 +77,33 @@ public class ClinicianRepository {
         }
     }
     
-    // ============================================================
-    // NEW METHOD: UPDATE CLINICIAN + UPDATE CSV
-    // ============================================================
+    // Updates existing clinician in memory and persists to CSV
     public void update(Clinician updatedClinician) {
-        // Find the clinician by ID and update their information
         for (int i = 0; i < clinicians.size(); i++) {
             Clinician clinician = clinicians.get(i);
             if (clinician.getId().equals(updatedClinician.getId())) {
-                // Update the clinician in the list
+                // Replace clinician record in memory
                 clinicians.set(i, updatedClinician);
-                
-                // Update the CSV file - rewrite entire file
+                // Persist all changes to CSV file
                 saveAllToCsv();
                 return;
             }
         }
-        
         System.err.println("Clinician not found for update: " + updatedClinician.getId());
     }
 
+    // Returns all clinician records in the repository
     public List<Clinician> getAll() {
         return clinicians;
     }
 
-    // ============================================================
-    // REMOVE
-    // ============================================================
+    // Removes clinician from memory and updates CSV file
     public void remove(Clinician c) {
         clinicians.remove(c);
-        // Update CSV after removal
         saveAllToCsv();
     }
     
-    // ============================================================
-    // NEW METHOD: REMOVE BY ID
-    // ============================================================
+    // Removes clinician by identifier lookup
     public void removeById(String id) {
         Clinician clinicianToRemove = null;
         for (Clinician c : clinicians) {
@@ -125,27 +118,26 @@ public class ClinicianRepository {
         }
     }
 
+    // Retrieves clinician by unique identifier
     public Clinician findById(String id) {
         for (Clinician c : clinicians)
             if (c.getId().equals(id)) return c;
         return null;
     }
     
-    // ============================================================
-    // NEW METHOD: SAVE ALL CLINICIANS TO CSV
-    // ============================================================
+    // Writes all clinician records to CSV file (full persistence)
     private void saveAllToCsv() {
         try {
             List<String[]> allData = new ArrayList<>();
             
-            // Add header row first (based on your CSV structure)
+            // Add CSV header row with column definitions
             allData.add(new String[]{
                 "clinician_id", "title", "first_name", "last_name", 
                 "speciality", "gmc_number", "phone_number", "email", 
                 "workplace_id", "workplace_type", "employment_status", "start_date"
             });
             
-            // Add all clinicians
+            // Convert all clinicians to CSV row format
             for (Clinician c : clinicians) {
                 allData.add(new String[]{
                     c.getId(),
@@ -163,7 +155,7 @@ public class ClinicianRepository {
                 });
             }
             
-            // Write to CSV using the writeCsv method
+            // Write complete dataset to CSV file
             CsvUtils.writeCsv(csvPath, allData);
             
         } catch (IOException ex) {

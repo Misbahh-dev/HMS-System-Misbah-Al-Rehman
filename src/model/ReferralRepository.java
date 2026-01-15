@@ -6,36 +6,40 @@ import java.util.List;
 
 public class ReferralRepository {
 
+    // In-memory storage for referral records
     private final List<Referral> referrals = new ArrayList<>();
+    // File system path for CSV persistence
     private final String csvPath;
 
+    // Constructor - loads data from CSV file on initialization
     public ReferralRepository(String csvPath) {
         this.csvPath = csvPath;
         load();
     }
 
+    // Loads referral data from CSV file into memory
     private void load() {
         try {
             for (String[] row : CsvUtils.readCsv(csvPath)) {
-
-                // Create Referral object with ALL 16 columns
+//Made By Misbah Al Rehman. SRN: 24173647
+                // Create Referral object with all 16 CSV columns
                 Referral r = new Referral(
-                        row[0],  // referral_id
-                        row[1],  // patient_id
-                        row[2],  // referring_clinician
-                        row[3],  // referred_to_clinician
-                        row[4],  // referring_facility
-                        row[5],  // referred_to_facility
-                        row[6],  // referral_date
-                        row[7],  // urgency_level
-                        row[8],  // referral_reason
-                        row[9],  // clinical_summary
-                        row[10], // requested_service
-                        row[11], // status
-                        row[12], // appointment_id
-                        row[13], // notes
-                        row[14], // created_date
-                        row[15]  // last_updated
+                        row[0],  // referral_id - unique identifier
+                        row[1],  // patient_id - referred patient
+                        row[2],  // referring_clinician - originating clinician
+                        row[3],  // referred_to_clinician - destination clinician
+                        row[4],  // referring_facility - originating facility
+                        row[5],  // referred_to_facility - destination facility
+                        row[6],  // referral_date - creation date
+                        row[7],  // urgency_level - priority classification
+                        row[8],  // referral_reason - primary rationale
+                        row[9],  // clinical_summary - comprehensive details
+                        row[10], // requested_service - required investigation
+                        row[11], // status - current lifecycle state
+                        row[12], // appointment_id - related appointment
+                        row[13], // notes - additional information
+                        row[14], // created_date - system timestamp
+                        row[15]  // last_updated - modification timestamp
                 );
 
                 referrals.add(r);
@@ -47,13 +51,14 @@ public class ReferralRepository {
     }
 
 
+    // Returns all referral records in the repository
     public List<Referral> getAll() {
         return referrals;
     }
 
 
     /**
-     * Add referral and append to CSV (ALL 16 COLUMNS)
+     * Adds referral to memory and appends to CSV (all 16 columns)
      */
     public void addAndAppend(Referral r) {
         referrals.add(r);
@@ -83,9 +88,7 @@ public class ReferralRepository {
         }
     }
 
-    // ============================================================
-    // UPDATE REFERRAL
-    // ============================================================
+    // Updates existing referral in memory and persists to CSV
     public void update(Referral updatedReferral) {
         for (int i = 0; i < referrals.size(); i++) {
             Referral r = referrals.get(i);
@@ -98,9 +101,7 @@ public class ReferralRepository {
         System.err.println("Referral not found for update: " + updatedReferral.getId());
     }
 
-    // ============================================================
-    // DELETE REFERRAL BY ID
-    // ============================================================
+    // Deletes referral by identifier from memory and CSV
     public void removeById(String id) {
         Referral referralToRemove = null;
         for (Referral r : referrals) {
@@ -116,14 +117,12 @@ public class ReferralRepository {
         }
     }
 
-    // ============================================================
-    // SAVE ALL REFERRALS TO CSV (NEW METHOD)
-    // ============================================================
+    // Writes all referral records to CSV file (full persistence)
     private void saveAllToCsv() {
         try {
             List<String[]> allData = new ArrayList<>();
             
-            // Add header row
+            // Add CSV header row with column definitions
             allData.add(new String[]{
                 "referral_id", "patient_id", "referring_clinician_id", "referred_to_clinician_id",
                 "referring_facility_id", "referred_to_facility_id", "referral_date", "urgency_level",
@@ -131,7 +130,7 @@ public class ReferralRepository {
                 "appointment_id", "notes", "created_date", "last_updated"
             });
             
-            // Add all referrals
+            // Convert all referrals to CSV row format
             for (Referral r : referrals) {
                 allData.add(new String[]{
                     r.getId(),
@@ -144,7 +143,7 @@ public class ReferralRepository {
                     r.getUrgencyLevel(),
                     r.getReferralReason(),
                     r.getClinicalSummary(),
-                    r.getRequestedService(), // Note: CSV column is "requested_investigations" but model field is "requestedService"
+                    r.getRequestedService(), // Note: CSV column name differs from field name
                     r.getStatus(),
                     r.getAppointmentId(),
                     r.getNotes(),
@@ -153,6 +152,7 @@ public class ReferralRepository {
                 });
             }
             
+            // Write complete dataset to CSV file
             CsvUtils.writeCsv(csvPath, allData);
             
         } catch (IOException ex) {

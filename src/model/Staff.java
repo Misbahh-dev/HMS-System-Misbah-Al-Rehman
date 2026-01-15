@@ -2,24 +2,27 @@ package model;
 
 public class Staff extends Person {
 
-    private String position;   // receptionist, admin, etc.
-    private String facilityId;
-    private String department;
-    private String employmentStatus;
-    private String startDate;
-    private String lineManager;
-    private String accessLevel;
+    // Staff-specific attributes beyond base Person class
+    private String position;       // Job title/role
+    private String facilityId;     // Assigned facility identifier
+    private String department;     // Organizational department
+    private String employmentStatus; // Current employment status
+    private String startDate;      // Employment commencement date
+    private String lineManager;    // Reporting manager identifier
+    private String accessLevel;    // System access permissions
 
+    // Default constructor for object instantiation
     public Staff() { }
 
+    // Basic constructor for essential staff attributes
     public Staff(String id, String name, String phone, String email,
                  String position, String facilityId) {
         super(id, name, phone, email);
         this.position = position;
         this.facilityId = facilityId;
     }
-
-    // New constructor with all fields
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Comprehensive constructor with all staff attributes
     public Staff(String id, String firstName, String lastName, String phone, String email,
                  String position, String department, String facilityId, 
                  String employmentStatus, String startDate, String lineManager, String accessLevel) {
@@ -33,7 +36,7 @@ public class Staff extends Person {
         this.accessLevel = accessLevel;
     }
 
-    // Getters and Setters
+    // Getter and Setter methods for staff-specific data
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
 
@@ -55,7 +58,7 @@ public class Staff extends Person {
     public String getAccessLevel() { return accessLevel; }
     public void setAccessLevel(String accessLevel) { this.accessLevel = accessLevel; }
     
-    // Helper methods
+    // Helper methods for name manipulation
     public String getFirstName() {
         String[] nameParts = getName().split(" ");
         return nameParts.length > 0 ? nameParts[0] : "";

@@ -18,18 +18,15 @@ public class ReferralView extends JPanel {
     private ReferralController controller;
     private JTable table;
     private DefaultTableModel model;
-
-    // Text fields
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Form input fields for referral data
     private JTextField txtId, txtReason, txtRequestedService,
             txtCreatedDate, txtLastUpdated;
-
     private JTextArea txtClinicalSummary, txtNotes;
-
     private JFormattedTextField txtReferralDate;
-    
     private JLabel titleLabel;
 
-    // ComboBoxes
+    // Dropdown selectors for related entities
     private JComboBox<String> cbPatientId;
     private JComboBox<String> cbRefClin, cbToClin;
     private JComboBox<String> cbRefFacility, cbToFacility;
@@ -37,43 +34,39 @@ public class ReferralView extends JPanel {
     private JComboBox<String> cbAppointmentId;
     private JComboBox<String> cbStatus;
 
-    // Button references
+    // Action buttons for referral management
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnDelete;
 
+    // Date formatting utilities
     private final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private final DateTimeFormatter localDateFormatter =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public ReferralView() {
+        // Main panel layout with consistent spacing
         setLayout(new BorderLayout(10,10));
         
-        // ============================================================
-        // TITLE PANEL
-        // ============================================================
+        // Title panel displays current view context
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titleLabel = new JLabel("Referral Management");
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // ============================================================
-        // MAIN CONTENT PANEL (form on top, table on bottom)
-        // ============================================================
+        // Main content panel with form on top, table on bottom
         JPanel mainContentPanel = new JPanel(new BorderLayout(10, 10));
         
-        // ============================================================
-        // FORM PANEL (TOP)
-        // ============================================================
+        // Form panel for referral data entry
         JPanel formPanel = new JPanel();
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         formPanel.setLayout(new GridLayout(0, 4, 20, 10));
 
+        // Initialize form components
         txtId = createField();
         txtReason = createField();
         txtRequestedService = createField();
-
         txtCreatedDate = createField(); txtCreatedDate.setEditable(false);
         txtLastUpdated = createField(); txtLastUpdated.setEditable(false);
 
@@ -84,7 +77,7 @@ public class ReferralView extends JPanel {
         cbToFacility = createCombo();
         cbAppointmentId = createCombo();
 
-        // Urgency dropdown
+        // Urgency classification options
         cbUrgency = new JComboBox<>(new String[]{
                 "Routine",
                 "Urgent",
@@ -93,7 +86,7 @@ public class ReferralView extends JPanel {
         });
         cbUrgency.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
-        // STATUS DROPDOWN
+        // Referral status options
         cbStatus = new JComboBox<>(new String[]{
                 "Pending",
                 "Sent",
@@ -107,28 +100,22 @@ public class ReferralView extends JPanel {
         cbStatus.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         txtReferralDate = createDateField();
-
         txtClinicalSummary = createArea();
         txtNotes = createArea();
 
-        // ============================================================
-        // ADD FORM ROWS
-        // ============================================================
+        // Add form components in labeled panels
         formPanel.add(labeled("Referral ID:", txtId));
         formPanel.add(labeled("Patient ID:", cbPatientId));
         formPanel.add(labeled("Referring Clinician ID:", cbRefClin));
         formPanel.add(labeled("Referred-To Clinician ID:", cbToClin));
-
         formPanel.add(labeled("Referring Facility ID:", cbRefFacility));
         formPanel.add(labeled("Referred-To Facility ID:", cbToFacility));
         formPanel.add(labeled("Referral Date (dd/MM/yyyy):", txtReferralDate));
         formPanel.add(labeled("Urgency Level:", cbUrgency));
-
         formPanel.add(labeled("Referral Reason:", txtReason));
         formPanel.add(labeled("Requested Service:", txtRequestedService));
         formPanel.add(labeled("Status:", cbStatus));
         formPanel.add(labeled("Appointment ID:", cbAppointmentId));
-
         formPanel.add(labeled("Clinical Summary:", new JScrollPane(txtClinicalSummary)));
         formPanel.add(labeled("Notes:", new JScrollPane(txtNotes)));
         formPanel.add(labeled("Created Date:", txtCreatedDate));
@@ -138,38 +125,24 @@ public class ReferralView extends JPanel {
         formContainer.add(new JScrollPane(formPanel), BorderLayout.CENTER);
         mainContentPanel.add(formContainer, BorderLayout.NORTH);
 
-        // ============================================================
-        // TABLE PANEL (BOTTOM)
-        // ============================================================
+        // Table panel for referral data display
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBorder(BorderFactory.createTitledBorder("Referrals List"));
         
-        // TABLE — ALL REFERRAL FIELDS
+        // Table model with all referral fields
         model = new DefaultTableModel(
                 new Object[]{
-                        "ID",
-                        "Patient",
-                        "Ref Clin",
-                        "To Clin",
-                        "Ref Facility",
-                        "To Facility",
-                        "Date",
-                        "Urgency",
-                        "Reason",
-                        "Clinical Summary",
-                        "Requested Service",
-                        "Status",
-                        "Appointment",
-                        "Notes",
-                        "Created",
-                        "Updated"
+                        "ID", "Patient", "Ref Clin", "To Clin",
+                        "Ref Facility", "To Facility", "Date", "Urgency",
+                        "Reason", "Clinical Summary", "Requested Service",
+                        "Status", "Appointment", "Notes", "Created", "Updated"
                 }, 0
         );
 
         table = new JTable(model);
         table.setRowHeight(18);
         
-        // Add selection listener to fill form when row is clicked
+        // Load selected row data into form
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
                 fillFormFromSelectedRow();
@@ -181,9 +154,7 @@ public class ReferralView extends JPanel {
 
         add(mainContentPanel, BorderLayout.CENTER);
 
-        // ============================================================
-        // BUTTON PANEL (RIGHT SIDE - VERTICAL LAYOUT)
-        // ============================================================
+        // Action buttons panel with vertical arrangement
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
@@ -192,7 +163,7 @@ public class ReferralView extends JPanel {
         btnUpdate = new JButton("Update Selected");
         btnDelete = new JButton("Delete Selected");
 
-        // Set smaller button size
+        // Standardize button dimensions for consistent UI
         Dimension buttonSize = new Dimension(120, 30);
         btnAdd.setPreferredSize(buttonSize);
         btnAdd.setMaximumSize(buttonSize);
@@ -201,11 +172,12 @@ public class ReferralView extends JPanel {
         btnDelete.setPreferredSize(buttonSize);
         btnDelete.setMaximumSize(buttonSize);
 
+        // Connect buttons to action handlers
         btnAdd.addActionListener(e -> onAdd());
         btnUpdate.addActionListener(e -> onUpdate());
         btnDelete.addActionListener(e -> onDelete());
 
-        // Add vertical spacing between buttons
+        // Arrange buttons vertically with spacing
         buttonPanel.add(Box.createVerticalStrut(10));
         buttonPanel.add(btnAdd);
         buttonPanel.add(Box.createVerticalStrut(15));
@@ -217,7 +189,7 @@ public class ReferralView extends JPanel {
         add(buttonPanel, BorderLayout.EAST);
     }
    
-    // ---------- Helper Creators ----------
+    // Helper methods for component creation
     private JTextField createField() {
         JTextField f = new JTextField(12);
         f.setPreferredSize(new Dimension(140, 22));
@@ -258,15 +230,14 @@ public class ReferralView extends JPanel {
         return p;
     }
     
+    // Updates view title based on user role
     public void setTitle(String title) {
         if (titleLabel != null) {
             titleLabel.setText(title);
         }
     }
 
-    // ============================================================
-    // CONTROLLER LINKING
-    // ============================================================
+    // Establishes connection to controller for business logic
     public void setController(ReferralController controller) {
         this.controller = controller;
         loadCombos();
@@ -274,6 +245,7 @@ public class ReferralView extends JPanel {
         refreshDates();
     }
 
+    // Populates dropdowns with available data options
     private void loadCombos() {
         cbPatientId.removeAllItems();
         cbRefClin.removeAllItems();
@@ -282,81 +254,68 @@ public class ReferralView extends JPanel {
         cbToFacility.removeAllItems();
         cbAppointmentId.removeAllItems();
 
-        // patients
+        // Load patient IDs
         for (String id : controller.getPatientIds()) {
             cbPatientId.addItem(id);
         }
 
-        // clinicians
+        // Load clinician IDs
         for (String id : controller.getClinicianIds()) {
             cbRefClin.addItem(id);
             cbToClin.addItem(id);
         }
 
-        // facilities
+        // Load facility IDs
         for (String id : controller.getFacilityIds()) {
             cbRefFacility.addItem(id);
             cbToFacility.addItem(id);
         }
 
-        // appointments
+        // Load appointment IDs
         for (String id : controller.getAppointmentIds()) {
             cbAppointmentId.addItem(id);
         }
     }
 
+    // Sets next available referral ID
     private void refreshAutoId() {
         txtId.setText(controller.getNextReferralId());
         txtId.setEditable(false);
     }
 
+    // Sets current date values for timestamps
     private void refreshDates() {
         String today = LocalDate.now().format(localDateFormatter);
         txtCreatedDate.setText(today);
         txtLastUpdated.setText(today);
     }
 
-    // ============================================================
-    // DISPLAY REFERRALS
-    // ============================================================
+    // Populates table with referral list data
     public void showReferrals(List<Referral> list) {
         model.setRowCount(0);
         for (Referral r : list) {
             model.addRow(new Object[]{
-                    r.getId(),
-                    r.getPatientId(),
-                    r.getReferringClinicianId(),
-                    r.getReferredToClinicianId(),
-                    r.getReferringFacilityId(),
-                    r.getReferredToFacilityId(),
-                    r.getReferralDate(),
-                    r.getUrgencyLevel(),
-                    r.getReferralReason(),
-                    r.getClinicalSummary(),
-                    r.getRequestedService(),
-                    r.getStatus(),
-                    r.getAppointmentId(),
-                    r.getNotes(),
-                    r.getCreatedDate(),
-                    r.getLastUpdated()
+                    r.getId(), r.getPatientId(), r.getReferringClinicianId(),
+                    r.getReferredToClinicianId(), r.getReferringFacilityId(),
+                    r.getReferredToFacilityId(), r.getReferralDate(),
+                    r.getUrgencyLevel(), r.getReferralReason(),
+                    r.getClinicalSummary(), r.getRequestedService(),
+                    r.getStatus(), r.getAppointmentId(), r.getNotes(),
+                    r.getCreatedDate(), r.getLastUpdated()
             });
         }
     }
 
-    // ============================================================
-    // FILL FORM FROM SELECTED ROW
-    // ============================================================
+    // Loads selected table row data into form fields
     private void fillFormFromSelectedRow() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow >= 0) {
             txtId.setText(getTableValue(selectedRow, 0));
-            
             setComboBoxSelection(cbPatientId, getTableValue(selectedRow, 1));
             setComboBoxSelection(cbRefClin, getTableValue(selectedRow, 2));
             setComboBoxSelection(cbToClin, getTableValue(selectedRow, 3));
             setComboBoxSelection(cbRefFacility, getTableValue(selectedRow, 4));
             setComboBoxSelection(cbToFacility, getTableValue(selectedRow, 5));
-            
             txtReferralDate.setText(getTableValue(selectedRow, 6));
             setComboBoxSelection(cbUrgency, getTableValue(selectedRow, 7));
             txtReason.setText(getTableValue(selectedRow, 8));
@@ -370,11 +329,13 @@ public class ReferralView extends JPanel {
         }
     }
     
+    // Safely retrieves table cell values
     private String getTableValue(int row, int column) {
         Object value = table.getValueAt(row, column);
         return value != null ? value.toString() : "";
     }
     
+    // Sets combobox selection with validation
     private void setComboBoxSelection(JComboBox<String> comboBox, String value) {
         if (value == null || value.isEmpty()) {
             comboBox.setSelectedIndex(-1);
@@ -385,17 +346,14 @@ public class ReferralView extends JPanel {
                     return;
                 }
             }
-            // If not found, add it and select it
+            // Add value if not found in list
             comboBox.addItem(value);
             comboBox.setSelectedItem(value);
         }
     }
 
-    // ============================================================
-    // ADD REFERRAL
-    // ============================================================
+    // Handles addition of new referral record
     private void onAdd() {
-
         String errors = validateForm();
         if (!errors.isEmpty()) {
             JOptionPane.showMessageDialog(this, errors,
@@ -423,18 +381,14 @@ public class ReferralView extends JPanel {
         );
 
         controller.addReferral(r);
-
         JOptionPane.showMessageDialog(this,
                 "Referral " + r.getId() + " created successfully.");
-
         refreshAutoId();
         refreshDates();
         clearFormButKeepIds();
     }
 
-    // ============================================================
-    // Build referral from form data
-    // ============================================================
+    // Constructs Referral object from form data
     private Referral buildReferralFromForm() {
         return new Referral(
                 txtId.getText().trim(),
@@ -456,9 +410,7 @@ public class ReferralView extends JPanel {
         );
     }
 
-    // ============================================================
-    // Update button handler
-    // ============================================================
+    // Handles updating of existing referral record
     private void onUpdate() {
         if (controller == null) return;
         
@@ -479,20 +431,16 @@ public class ReferralView extends JPanel {
         }
         
         Referral r = buildReferralFromForm();
-        
         controller.updateReferral(r);
         
         JOptionPane.showMessageDialog(this,
                 "Referral " + r.getId() + " updated successfully!",
-                "Success",
-                JOptionPane.INFORMATION_MESSAGE);
+                "Success", JOptionPane.INFORMATION_MESSAGE);
         
         refreshAutoId();
     }
 
-    // ============================================================
-    // Delete button handler
-    // ============================================================
+    // Handles deletion of selected referral record
     private void onDelete() {
         if (controller == null) return;
         
@@ -522,41 +470,35 @@ public class ReferralView extends JPanel {
             clearFormButKeepIds();
             JOptionPane.showMessageDialog(this, 
                 "Referral deleted successfully!",
-                "Success",
-                JOptionPane.INFORMATION_MESSAGE);
+                "Success", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
+    // Validates form input for required fields
     private String validateForm() {
         StringBuilder sb = new StringBuilder();
 
         if (cbPatientId.getSelectedItem() == null)
             sb.append("- Patient ID required\n");
-
         if (cbRefClin.getSelectedItem() == null)
             sb.append("- Referring clinician required\n");
-
         if (cbToClin.getSelectedItem() == null)
             sb.append("- Referred-to clinician required\n");
-
         if (cbRefFacility.getSelectedItem() == null)
             sb.append("- Referring facility required\n");
-
         if (cbToFacility.getSelectedItem() == null)
             sb.append("- Referred-to facility required\n");
-
         if (txtReferralDate.getText().trim().isEmpty())
             sb.append("- Referral date required\n");
-
         if (txtReason.getText().trim().isEmpty())
             sb.append("- Referral reason required\n");
-
         if (txtClinicalSummary.getText().trim().isEmpty())
             sb.append("- Clinical summary required\n");
 
         return sb.toString();
     }
 
+    // Resets form fields while preserving ID values
     private void clearFormButKeepIds() {
         txtReason.setText("");
         txtClinicalSummary.setText("");
@@ -564,10 +506,7 @@ public class ReferralView extends JPanel {
         txtNotes.setText("");
     }
 
-    // ============================================================
-    // ACCESS CONTROL METHODS
-    // ============================================================
-    
+    // Configures form for read-only or editable mode
     public void setReadOnlyMode(boolean readOnly) {
         txtReason.setEditable(!readOnly);
         txtClinicalSummary.setEditable(!readOnly);
@@ -582,31 +521,33 @@ public class ReferralView extends JPanel {
         cbUrgency.setEnabled(!readOnly);
         cbStatus.setEnabled(!readOnly);
         cbAppointmentId.setEnabled(!readOnly);
-        
         txtReferralDate.setEditable(!readOnly);
-        
         btnAdd.setVisible(!readOnly);
         if (btnUpdate != null) btnUpdate.setVisible(!readOnly);
         if (btnDelete != null) btnDelete.setVisible(!readOnly);
     }
     
+    // Hides add and update buttons (read-only view)
     public void hideAddUpdateButtons() {
         btnAdd.setVisible(false);
         if (btnUpdate != null) btnUpdate.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);
     }
     
+    // Shows all action buttons (admin view)
     public void showAddUpdateButtons() {
         btnAdd.setVisible(true);
         if (btnUpdate != null) btnUpdate.setVisible(true);
         if (btnDelete != null) btnDelete.setVisible(true);
     }
 
+    // Shows update and delete buttons only
     public void showUpdateDeleteButtons() {
         if (btnUpdate != null) btnUpdate.setVisible(true);
         if (btnDelete != null) btnDelete.setVisible(true);
     }
 
+    // Hides update and delete buttons
     public void hideUpdateDeleteButtons() {
         if (btnUpdate != null) btnUpdate.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);

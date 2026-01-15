@@ -7,15 +7,18 @@ import java.util.List;
 
 public class ReferralManager {
 
+    // Singleton pattern implementation
     private static ReferralManager instance;
-    private static boolean initialized = false;  // ADDED: Track initialization
+    private static boolean initialized = false;  // Track initialization state
 
+    // Repository dependencies for data access
     private final ReferralRepository referralRepository;
     private final PatientRepository patientRepository;
     private final ClinicianRepository clinicianRepository;
     private final FacilityRepository facilityRepository;
-    private final String referralTextPath;
-
+    private final String referralTextPath;  // Text file output path
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Private constructor for singleton pattern
     private ReferralManager(ReferralRepository rr,
                             PatientRepository pr,
                             ClinicianRepository cr,
@@ -30,7 +33,7 @@ public class ReferralManager {
     }
 
 
-    // Singleton access - Now with initialization guard
+    // Singleton access with initialization parameters (first-time setup)
     public static synchronized ReferralManager getInstance(
             ReferralRepository rr,
             PatientRepository pr,
@@ -39,23 +42,20 @@ public class ReferralManager {
             String referralTextPath) {
 
         if (instance == null) {
-            // First time initialization - create instance
+            // First time initialization - create new instance
             instance = new ReferralManager(rr, pr, cr, fr, referralTextPath);
             initialized = true;
         } else if (!initialized) {
-            // This shouldn't happen, but just in case
+            // Fallback: recreate instance if not properly initialized
             instance = new ReferralManager(rr, pr, cr, fr, referralTextPath);
             initialized = true;
         }
-        // If already initialized, return existing instance (ignore new parameters)
+        // Return existing instance if already initialized (ignore new parameters)
         
         return instance;
     }
     
-    // ============================================================
-    // ADDED: Alternative getInstance() without parameters
-    // (for getting the instance after it's been initialized)
-    // ============================================================
+    // Singleton access without parameters (post-initialization)
     public static synchronized ReferralManager getInstance() {
         if (instance == null) {
             throw new IllegalStateException(
@@ -65,36 +65,32 @@ public class ReferralManager {
         return instance;
     }
     
-    // ============================================================
-    // ADDED: Check if already initialized (optional)
-    // ============================================================
+    // Check initialization status
     public static synchronized boolean isInitialized() {
         return initialized;
     }
 
+    // Creates new referral with text file generation
     public void createReferral(Referral r) {
         referralRepository.addAndAppend(r);
         writeReferralText(r);
     }
 
+    // Returns all referral records
     public List<Referral> getAllReferrals() {
         return referralRepository.getAll();
     }
 
-    // ============================================================
-    // ADDED: UPDATE REFERRAL METHOD
-    // ============================================================
+    // Updates existing referral record
     public void updateReferral(Referral r) {
         referralRepository.update(r);
-        // Also update the text file
+        // Regenerate text file representation
         writeReferralText(r);
     }
 
-    // ============================================================
-    // ADDED: DELETE REFERRAL METHOD
-    // ============================================================
+    // Deletes referral by identifier with audit trail
     public void deleteReferral(String id) {
-        // Find the referral first
+        // Find referral before deletion
         Referral referralToDelete = null;
         for (Referral r : referralRepository.getAll()) {
             if (r.getId().equals(id)) {
@@ -105,14 +101,12 @@ public class ReferralManager {
         
         if (referralToDelete != null) {
             referralRepository.removeById(id);
-            // Append deletion note to text file
+            // Record deletion in text file
             writeDeletionNote(referralToDelete);
         }
     }
 
-    // ============================================================
-    // ADDED: WRITE DELETION NOTE METHOD
-    // ============================================================
+    // Records referral deletion in text file
     private void writeDeletionNote(Referral r) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(referralTextPath, true))) {
             bw.write("==============================================");
@@ -137,9 +131,10 @@ public class ReferralManager {
         }
     }
 
-    //referaltext
+    // Generates formatted text file representation of referral
     private void writeReferralText(Referral r) {
 
+        // Retrieve related entity data for comprehensive report
         Patient patient = patientRepository.findById(r.getPatientId());
         Clinician referringClinician = clinicianRepository.findById(r.getReferringClinicianId());
         Clinician referredToClinician = clinicianRepository.findById(r.getReferredToClinicianId());
@@ -148,6 +143,7 @@ public class ReferralManager {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(referralTextPath, true))) {
 
+            // Report header section
             bw.write("==============================================");
             bw.newLine();
             bw.write("            REFERRAL SUMMARY REPORT           ");
@@ -158,32 +154,31 @@ public class ReferralManager {
             bw.write("Referral ID: " + r.getId());
             bw.newLine();
 
-            // Patient details
+            // Patient information
             if (patient != null) {
                 bw.write("Patient: " + patient.getName() + " (NHS: " + patient.getNhsNumber() + ")");
                 bw.newLine();
             }
 
-           // Referring Clinician
-if (referringClinician != null) {
-    bw.write("Referring Clinician: " 
-        + referringClinician.getFullName()
-        + " (" + referringClinician.getTitle()
-        + " - " + referringClinician.getSpeciality() + ")");
-    bw.newLine();
-}
+            // Referring clinician details
+            if (referringClinician != null) {
+                bw.write("Referring Clinician: " 
+                    + referringClinician.getFullName()
+                    + " (" + referringClinician.getTitle()
+                    + " - " + referringClinician.getSpeciality() + ")");
+                bw.newLine();
+            }
 
-// Referred-To Clinician
-if (referredToClinician != null) {
-    bw.write("Referred To: " 
-        + referredToClinician.getFullName()
-        + " (" + referredToClinician.getTitle()
-        + " - " + referredToClinician.getSpeciality() + ")");
-    bw.newLine();
-}
+            // Destination clinician details
+            if (referredToClinician != null) {
+                bw.write("Referred To: " 
+                    + referredToClinician.getFullName()
+                    + " (" + referredToClinician.getTitle()
+                    + " - " + referredToClinician.getSpeciality() + ")");
+                bw.newLine();
+            }
 
-
-            // Facilities
+            // Facility information
             if (referringFacility != null) {
                 bw.write("Referring Facility: " + referringFacility.getName() +
                          " (" + referringFacility.getType() + ")");
@@ -196,7 +191,7 @@ if (referredToClinician != null) {
                 bw.newLine();
             }
 
-            // Dates, urgency, reason
+            // Referral details and classification
             bw.write("Referral Date: " + r.getReferralDate());
             bw.newLine();
 
@@ -212,18 +207,19 @@ if (referredToClinician != null) {
             bw.write("Status: " + r.getStatus());
             bw.newLine();
 
-            // Clinical Summary
+            // Clinical documentation
             bw.write("Clinical Summary:");
             bw.newLine();
             bw.write(r.getClinicalSummary());
             bw.newLine();
 
-            // Notes
+            // Administrative notes
             bw.write("Notes:");
             bw.newLine();
             bw.write(r.getNotes());
             bw.newLine();
 
+            // System timestamps
             bw.write("Created Date: " + r.getCreatedDate());
             bw.newLine();
 

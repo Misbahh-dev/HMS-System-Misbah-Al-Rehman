@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoginRepository {
-    private List<Login> loginUsers; // Change to List<Login> if you kept Login.java
+    // Collection of all system user login credentials
+    private List<Login> loginUsers;
+    // Reference repositories for user data access
     private PatientRepository patientRepo;
     private ClinicianRepository clinicianRepo;
     private StaffRepository staffRepo;
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Constructor - initializes repository with user data sources
     public LoginRepository(PatientRepository pr, ClinicianRepository cr, StaffRepository sr) {
         this.patientRepo = pr;
         this.clinicianRepo = cr;
@@ -17,43 +20,45 @@ public class LoginRepository {
         loadUsers();
     }
 
+    // Populates login repository from all user data sources
     private void loadUsers() {
-        // Load patients (use patient_id as password for simplicity)
+        // Load all patients as system users (using ID as password)
         for (Patient p : patientRepo.getAll()) {
-            loginUsers.add(new Login( // Change to new Login() if you kept Login.java
+            loginUsers.add(new Login(
                 p.getId(), 
-                p.getId(), // Using ID as password
+                p.getId(), // Simplified authentication: ID as password
                 "patient", 
                 p
             ));
         }
 
-        // Load clinicians
+        // Load all clinicians as system users
         for (Clinician c : clinicianRepo.getAll()) {
-            loginUsers.add(new Login( // Change to new Login() if you kept Login.java
+            loginUsers.add(new Login(
                 c.getId(),
-                c.getId(), // Using ID as password
+                c.getId(), // Simplified authentication: ID as password
                 "clinician",
                 c
             ));
         }
 
-        // Load staff
+        // Load all staff members as system users
         for (Staff s : staffRepo.getAll()) {
-            loginUsers.add(new Login( // Change to new Login() if you kept Login.java
+            loginUsers.add(new Login(
                 s.getId(),
-                s.getId(), // Using ID as password
+                s.getId(), // Simplified authentication: ID as password
                 "staff",
                 s
             ));
         }
         
-        // Add a demo admin (optional)
-        loginUsers.add(new Login("admin", "admin123", "admin", null)); // Change here too
+        // Add demo administrator account (optional system access)
+        loginUsers.add(new Login("admin", "admin123", "admin", null));
     }
 
-    public Login authenticate(String userId, String password) { // Change return type if needed
-        for (Login user : loginUsers) { // Change type if needed
+    // Validates user credentials against stored authentication data
+    public Login authenticate(String userId, String password) {
+        for (Login user : loginUsers) {
             if (user.getUserId().equals(userId) && user.authenticate(password)) {
                 return user;
             }
@@ -61,9 +66,10 @@ public class LoginRepository {
         return null;
     }
 
+    // Returns all user identifiers with role information
     public List<String> getAllUserIds() {
         List<String> ids = new ArrayList<>();
-        for (Login user : loginUsers) { // Change type if needed
+        for (Login user : loginUsers) {
             ids.add(user.getUserId() + " (" + user.getRole() + ")");
         }
         return ids;

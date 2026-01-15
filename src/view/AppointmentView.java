@@ -19,7 +19,6 @@ public class AppointmentView extends JPanel {
     private JTable table;
     private DefaultTableModel model;
 
-    // Form components
     private JTextField txtId, txtTime, txtDuration, txtType;
     private JTextField txtReason, txtLastModified;
 
@@ -30,38 +29,27 @@ public class AppointmentView extends JPanel {
 
     private JTextArea txtNotes;
     
-    // NEW: Date spinners
-    private JSpinner dateSpinner;          // For appointment date
-    private JSpinner createdDateSpinner;   // For created date
+    private JSpinner dateSpinner;
+    private JSpinner createdDateSpinner;
     
-    // ============================================================
-    // ADDED: UI components for role-based access
-    // ============================================================
-    private JLabel titleLabel; // For setting window title
+    private JLabel titleLabel;
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnDelete;
     private JPanel buttonsPanel;
 
-    // CORRECTED: Date formatter to match appointments.csv format
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public AppointmentView() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // ============================================================
-        // ADDED: TITLE PANEL
-        // ============================================================
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titleLabel = new JLabel("Appointment Management");
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // ============================================================
-        // TABLE
-        // ============================================================
         model = new DefaultTableModel(
                 new Object[]{
                         "ID", "Patient", "Clinician", "Facility",
@@ -71,44 +59,61 @@ public class AppointmentView extends JPanel {
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false;
             }
         };
-
+//Made By Misbah Al Rehman. SRN: 24173647
         table = new JTable(model);
-        table.setRowHeight(22);
+        table.setRowHeight(23);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
         JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setPreferredSize(new Dimension(800, 200));
+        tableScrollPane.setPreferredSize(new Dimension(850, 220));
         add(tableScrollPane, BorderLayout.SOUTH);
 
-        // ============================================================
-        // FORM
-        // ============================================================
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBorder(BorderFactory.createTitledBorder("Appointment Details"));
+        form.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Appointment Details"),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
         GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(6, 6, 6, 6);
+        gc.insets = new Insets(8, 10, 8, 10);
         gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 1.0;
 
-        txtId = new JTextField(); 
+        txtId = new JTextField(15);
         txtId.setEditable(false);
+        txtId.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         cbPatientId = new JComboBox<>();
         cbClinicianId = new JComboBox<>();
         cbFacilityId = new JComboBox<>();
+        cbPatientId.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        cbClinicianId.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        cbFacilityId.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        cbPatientId.setPreferredSize(new Dimension(180, 28));
+        cbClinicianId.setPreferredSize(new Dimension(180, 28));
+        cbFacilityId.setPreferredSize(new Dimension(180, 28));
 
-        // NEW: Date spinners with CORRECT format "yyyy-MM-dd"
         dateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
         dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd"));
+        dateSpinner.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        dateSpinner.setPreferredSize(new Dimension(140, 28));
         
         createdDateSpinner = new JSpinner(new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH));
         createdDateSpinner.setEditor(new JSpinner.DateEditor(createdDateSpinner, "yyyy-MM-dd"));
-        createdDateSpinner.setEnabled(false); // Usually read-only
+        createdDateSpinner.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        createdDateSpinner.setPreferredSize(new Dimension(140, 28));
+        createdDateSpinner.setEnabled(false);
 
-        txtTime = new JTextField();
-        txtDuration = new JTextField();
-        txtType = new JTextField();
-        txtReason = new JTextField();
+        txtTime = new JTextField(12);
+        txtDuration = new JTextField(12);
+        txtType = new JTextField(12);
+        txtReason = new JTextField(12);
+        
+        txtTime.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        txtDuration.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        txtType.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        txtReason.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         cbStatus = new JComboBox<>(new String[]{
                 "SCHEDULED",
@@ -118,12 +123,15 @@ public class AppointmentView extends JPanel {
                 "NO-SHOW"
         });
         cbStatus.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        cbStatus.setPreferredSize(new Dimension(180, 28));
 
-        txtNotes = new JTextArea(3, 15);
+        txtNotes = new JTextArea(4, 20);
+        txtNotes.setFont(new Font("SansSerif", Font.PLAIN, 12));
         txtNotes.setLineWrap(true);
         txtNotes.setWrapStyleWord(true);
 
-        txtLastModified = new JTextField();
+        txtLastModified = new JTextField(12);
+        txtLastModified.setFont(new Font("SansSerif", Font.PLAIN, 12));
         txtLastModified.setEditable(false);
 
         int row = 0;
@@ -134,56 +142,65 @@ public class AppointmentView extends JPanel {
         addFieldPair(form, gc, row++, "Status:", cbStatus, "Reason for Visit:", txtReason);
         addFieldPair(form, gc, row++, "Created Date:", createdDateSpinner, "Last Modified:", txtLastModified);
 
-        // Notes row
         gc.gridx = 0; gc.gridy = row; gc.gridwidth = 1;
-        form.add(new JLabel("Notes:"), gc);
+        JLabel notesLabel = new JLabel("Notes:");
+        notesLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        form.add(notesLabel, gc);
 
         gc.gridx = 1; gc.gridy = row; gc.gridwidth = 3;
-        form.add(new JScrollPane(txtNotes), gc);
+        gc.weightx = 1.0;
+        gc.weighty = 0.8;
+        gc.fill = GridBagConstraints.BOTH;
+        JScrollPane notesScrollPane = new JScrollPane(txtNotes);
+        notesScrollPane.setPreferredSize(new Dimension(550, 80));
+        form.add(notesScrollPane, gc);
 
         JScrollPane formScrollPane = new JScrollPane(form);
-        formScrollPane.setPreferredSize(new Dimension(800, 300));
+        formScrollPane.setPreferredSize(new Dimension(850, 350));
+        formScrollPane.setBorder(BorderFactory.createEmptyBorder());
         add(formScrollPane, BorderLayout.CENTER);
 
-        // ============================================================
-        // BUTTONS (MODIFIED)
-        // ============================================================
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-        buttonsPanel.setBorder(BorderFactory.createTitledBorder("Actions"));
+        buttonsPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Actions"),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
         
         btnAdd = new JButton("Add Appointment");
         btnUpdate = new JButton("Update Selected");
         btnDelete = new JButton("Delete Selected");
         
-        // Set preferred sizes for vertical alignment
-        Dimension buttonSize = new Dimension(150, 35);
+        Font buttonFont = new Font("SansSerif", Font.BOLD, 13);
+        btnAdd.setFont(buttonFont);
+        btnUpdate.setFont(buttonFont);
+        btnDelete.setFont(buttonFont);
+        
+        Dimension buttonSize = new Dimension(170, 38);
         btnAdd.setPreferredSize(buttonSize);
         btnAdd.setMaximumSize(buttonSize);
+        btnAdd.setMinimumSize(buttonSize);
         btnUpdate.setPreferredSize(buttonSize);
         btnUpdate.setMaximumSize(buttonSize);
+        btnUpdate.setMinimumSize(buttonSize);
         btnDelete.setPreferredSize(buttonSize);
         btnDelete.setMaximumSize(buttonSize);
+        btnDelete.setMinimumSize(buttonSize);
         
-        // Add action listeners
         btnAdd.addActionListener(e -> addAppointment());
         btnUpdate.addActionListener(e -> updateAppointment());
         btnDelete.addActionListener(e -> deleteAppointment());
         
-        // Add vertical spacing
-        buttonsPanel.add(Box.createVerticalStrut(10));
+        buttonsPanel.add(Box.createVerticalStrut(15));
         buttonsPanel.add(btnAdd);
-        buttonsPanel.add(Box.createVerticalStrut(10));
+        buttonsPanel.add(Box.createVerticalStrut(20));
         buttonsPanel.add(btnUpdate);
-        buttonsPanel.add(Box.createVerticalStrut(10));
+        buttonsPanel.add(Box.createVerticalStrut(20));
         buttonsPanel.add(btnDelete);
-        buttonsPanel.add(Box.createVerticalStrut(10));
+        buttonsPanel.add(Box.createVerticalStrut(15));
         
         add(buttonsPanel, BorderLayout.EAST);
         
-        // ============================================================
-        // ADDED: TABLE SELECTION LISTENER
-        // ============================================================
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 loadSelectedRowIntoForm();
@@ -191,29 +208,31 @@ public class AppointmentView extends JPanel {
         });
     }
 
-    // Helper method for form layout
     private void addFieldPair(JPanel panel, GridBagConstraints gc, int row,
                               String l1, JComponent f1,
                               String l2, JComponent f2) {
 
         gc.gridwidth = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 0.5;
 
         gc.gridx = 0; gc.gridy = row;
-        panel.add(new JLabel(l1), gc);
+        JLabel label1 = new JLabel(l1);
+        label1.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        panel.add(label1, gc);
 
         gc.gridx = 1;
         panel.add(f1, gc);
 
         gc.gridx = 2;
-        panel.add(new JLabel(l2), gc);
+        JLabel label2 = new JLabel(l2);
+        label2.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        panel.add(label2, gc);
 
         gc.gridx = 3;
         panel.add(f2, gc);
     }
 
-    // ============================================================
-    // Dropdown loading
-    // ============================================================
     public void loadDropdowns(List<String> patients, List<String> clinicians, List<String> facilities) {
         cbPatientId.removeAllItems();
         cbClinicianId.removeAllItems();
@@ -225,14 +244,10 @@ public class AppointmentView extends JPanel {
 
         txtId.setText(controller.generateId());
         
-        // Set today's date for created date
         createdDateSpinner.setValue(new Date());
         txtLastModified.setText(dateFormat.format(new Date()));
     }
 
-    // ============================================================
-    // TABLE VIEW UPDATE
-    // ============================================================
     public void showAppointments(List<Appointment> list) {
         model.setRowCount(0);
 
@@ -255,13 +270,9 @@ public class AppointmentView extends JPanel {
         }
     }
 
-    // ============================================================
-    // ADD APPOINTMENT
-    // ============================================================
     private void addAppointment() {
         if (controller == null) return;
         
-        // Validate form
         if (!validateForm()) {
             return;
         }
@@ -271,14 +282,14 @@ public class AppointmentView extends JPanel {
                 (String) cbPatientId.getSelectedItem(),
                 (String) cbClinicianId.getSelectedItem(),
                 (String) cbFacilityId.getSelectedItem(),
-                dateFormat.format(dateSpinner.getValue()), // Uses "yyyy-MM-dd" format
+                dateFormat.format(dateSpinner.getValue()),
                 txtTime.getText(),
                 txtDuration.getText(),
                 txtType.getText(),
                 (String) cbStatus.getSelectedItem(),
                 txtReason.getText(),
                 txtNotes.getText(),
-                dateFormat.format(createdDateSpinner.getValue()), // Uses "yyyy-MM-dd" format
+                dateFormat.format(createdDateSpinner.getValue()),
                 txtLastModified.getText()
         );
 
@@ -286,9 +297,6 @@ public class AppointmentView extends JPanel {
         clearForm();
     }
     
-    // ============================================================
-    // ADDED: UPDATE APPOINTMENT
-    // ============================================================
     private void updateAppointment() {
         if (controller == null) return;
         
@@ -301,7 +309,6 @@ public class AppointmentView extends JPanel {
             return;
         }
         
-        // Validate form
         if (!validateForm()) {
             return;
         }
@@ -311,24 +318,20 @@ public class AppointmentView extends JPanel {
                 (String) cbPatientId.getSelectedItem(),
                 (String) cbClinicianId.getSelectedItem(),
                 (String) cbFacilityId.getSelectedItem(),
-                dateFormat.format(dateSpinner.getValue()), // Uses "yyyy-MM-dd" format
+                dateFormat.format(dateSpinner.getValue()),
                 txtTime.getText(),
                 txtDuration.getText(),
                 txtType.getText(),
                 (String) cbStatus.getSelectedItem(),
                 txtReason.getText(),
                 txtNotes.getText(),
-                dateFormat.format(createdDateSpinner.getValue()), // Uses "yyyy-MM-dd" format
-                dateFormat.format(new Date()) // Update last modified to now
+                dateFormat.format(createdDateSpinner.getValue()),
+                dateFormat.format(new Date())
         );
         
-        // Call update method in controller
         controller.updateAppointment(a);
     }
 
-    // ============================================================
-    // DELETE APPOINTMENT
-    // ============================================================
     private void deleteAppointment() {
         if (controller == null) return;
         
@@ -345,7 +348,6 @@ public class AppointmentView extends JPanel {
         String patient = model.getValueAt(row, 1).toString();
         String date = model.getValueAt(row, 4).toString();
         
-        // Ask for confirmation
         int confirm = JOptionPane.showConfirmDialog(this,
             "Are you sure you want to delete appointment:\n" +
             "ID: " + id + "\n" +
@@ -361,9 +363,6 @@ public class AppointmentView extends JPanel {
         }
     }
     
-    // ============================================================
-    // ADDED: LOAD SELECTED ROW INTO FORM
-    // ============================================================
     private void loadSelectedRowIntoForm() {
         int row = table.getSelectedRow();
         if (row < 0) return;
@@ -373,14 +372,12 @@ public class AppointmentView extends JPanel {
         cbClinicianId.setSelectedItem(getValue(row, 2));
         cbFacilityId.setSelectedItem(getValue(row, 3));
         
-        // Parse appointment date string to set spinner
         String dateStr = getValue(row, 4);
         if (!dateStr.isEmpty()) {
             try {
                 Date apptDate = dateFormat.parse(dateStr);
                 dateSpinner.setValue(apptDate);
             } catch (ParseException e) {
-                // If parsing fails, keep current date
                 System.err.println("Failed to parse appointment date: " + dateStr);
             }
         }
@@ -392,7 +389,6 @@ public class AppointmentView extends JPanel {
         txtReason.setText(getValue(row, 9));
         txtNotes.setText(getValue(row, 10));
         
-        // Parse created date string to set spinner
         String createdDateStr = getValue(row, 11);
         if (!createdDateStr.isEmpty()) {
             try {
@@ -411,9 +407,6 @@ public class AppointmentView extends JPanel {
         return value == null ? "" : value.toString();
     }
     
-    // ============================================================
-    // ADDED: VALIDATION
-    // ============================================================
     private boolean validateForm() {
         StringBuilder errors = new StringBuilder();
         
@@ -450,11 +443,7 @@ public class AppointmentView extends JPanel {
         return true;
     }
     
-    // ============================================================
-    // ADDED: CLEAR FORM
-    // ============================================================
     private void clearForm() {
-        // Reset date spinners to today
         dateSpinner.setValue(new Date());
         
         txtTime.setText("");
@@ -464,8 +453,6 @@ public class AppointmentView extends JPanel {
         txtNotes.setText("");
         txtLastModified.setText(dateFormat.format(new Date()));
         
-        // Don't clear ID, patient, clinician, facility - let dropdowns stay
-        // Regenerate ID for next appointment
         if (controller != null) {
             txtId.setText(controller.generateId());
         }
@@ -475,18 +462,12 @@ public class AppointmentView extends JPanel {
         this.controller = controller;
     }
     
-    // ============================================================
-    // ADDED: METHODS NEEDED BY CONTROLLER
-    // ============================================================
-    
     public void setReadOnlyMode(boolean readOnly) {
-        // Enable/disable all input components
         cbPatientId.setEnabled(!readOnly);
         cbClinicianId.setEnabled(!readOnly);
         cbFacilityId.setEnabled(!readOnly);
         cbStatus.setEnabled(!readOnly);
         
-        // Date spinners
         dateSpinner.setEnabled(!readOnly);
         createdDateSpinner.setEnabled(!readOnly);
         
@@ -501,7 +482,7 @@ public class AppointmentView extends JPanel {
     public void hideAddDeleteButtons() {
         if (btnAdd != null) btnAdd.setVisible(false);
         if (btnDelete != null) btnDelete.setVisible(false);
-        if (btnUpdate != null) btnUpdate.setVisible(true); // Keep update button visible
+        if (btnUpdate != null) btnUpdate.setVisible(true);
     }
     
     public void showUpdateButton() {
@@ -520,9 +501,6 @@ public class AppointmentView extends JPanel {
         }
     }
     
-    // ============================================================
-    // ADDED: HIDE ALL BUTTONS (for initial state)
-    // ============================================================
     public void hideAllButtons() {
         if (btnAdd != null) btnAdd.setVisible(false);
         if (btnUpdate != null) btnUpdate.setVisible(false);
@@ -535,4 +513,4 @@ public class AppointmentView extends JPanel {
      if (btnDelete != null) btnDelete.setVisible(true);
      
     }
-}  
+}

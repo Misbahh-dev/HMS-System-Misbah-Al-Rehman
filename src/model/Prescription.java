@@ -2,26 +2,31 @@ package model;
 
 public class Prescription {
 
-    private String id;               // prescription_id (RX001)
-    private String patientId;        // patient_id (P001)
-    private String clinicianId;      // clinician_id (C001)
-    private String appointmentId;    // appointment_id (A001)
-    private String prescriptionDate; // prescription_date (yyyy-MM-dd)
+    // Core prescription identification and attribution
+    private String id;               // Unique prescription identifier (RX001)
+    private String patientId;        // Prescribed patient identifier (P001)
+    private String clinicianId;      // Prescribing clinician identifier (C001)
+    private String appointmentId;    // Associated appointment identifier (A001)
+    private String prescriptionDate; // Prescription creation date (yyyy-MM-dd)
 
-    private String medication;       // medication_name
-    private String dosage;           // dosage (e.g. 20mg)
-    private String frequency;        // frequency (e.g. Once daily)
-    private String durationDays;     // duration_days (e.g. 28)
-    private String quantity;         // quantity (e.g. 28 tablets)
+    // Medication details and dosage information
+    private String medication;       // Medication brand/generic name
+    private String dosage;           // Strength and unit (e.g. 20mg)
+    private String frequency;        // Administration schedule (e.g. Once daily)
+    private String durationDays;     // Treatment duration in days
+    private String quantity;         // Total quantity dispensed
 
-    private String instructions;     // instructions
-    private String pharmacyName;     // pharmacy_name
-    private String status;           // status (Issued / Collected / etc.)
-    private String issueDate;        // issue_date (yyyy-MM-dd)
-    private String collectionDate;   // collection_date (yyyy-MM-dd or "")
+    // Prescription administration and tracking
+    private String instructions;     // Patient usage instructions
+    private String pharmacyName;     // Dispensing pharmacy name
+    private String status;           // Prescription lifecycle status
+    private String issueDate;        // Original issuance date
+    private String collectionDate;   // Patient collection date
 
+    // Default constructor for object instantiation
     public Prescription() { }
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Primary constructor with all prescription attributes
     public Prescription(String id,
                         String patientId,
                         String clinicianId,
@@ -55,6 +60,7 @@ public class Prescription {
         this.collectionDate = collectionDate;
     }
 
+    // Getters for retrieving prescription data
     public String getId()               { return id; }
     public String getPatientId()        { return patientId; }
     public String getClinicianId()      { return clinicianId; }
@@ -71,6 +77,7 @@ public class Prescription {
     public String getIssueDate()        { return issueDate; }
     public String getCollectionDate()   { return collectionDate; }
 
+    // Setters for updating prescription data
     public void setId(String id)                             { this.id = id; }
     public void setPatientId(String patientId)               { this.patientId = patientId; }
     public void setClinicianId(String clinicianId)           { this.clinicianId = clinicianId; }

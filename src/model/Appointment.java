@@ -2,22 +2,25 @@ package model;
 
 public class Appointment {
 
-    private String id;                  // appointment_id
-    private String patientId;           // patient_id
-    private String clinicianId;         // clinician_id
-    private String facilityId;          // facility_id
-    private String appointmentDate;     // appointment_date  (e.g. 20/09/2025)
-    private String appointmentTime;     // appointment_time  (e.g. 09:00)
-    private String durationMinutes;     // duration_minutes  (e.g. 15)
-    private String appointmentType;     // appointment_type  (e.g. Routine Consultation)
-    private String status;              // status            (Scheduled, Cancelled, etc.)
-    private String reasonForVisit;      // reason_for_visit
-    private String notes;               // notes
-    private String createdDate;         // created_date
-    private String lastModified;        // last_modified
+    // Core appointment identification and tracking
+    private String id;                  // Unique appointment identifier
+    private String patientId;           // Associated patient identifier
+    private String clinicianId;         // Assigned clinician identifier
+    private String facilityId;          // Scheduled facility location
+    private String appointmentDate;     // Scheduled appointment date
+    private String appointmentTime;     // Scheduled appointment time
+    private String durationMinutes;     // Expected duration in minutes
+    private String appointmentType;     // Type of appointment/service
+    private String status;              // Current appointment status
+    private String reasonForVisit;      // Primary reason for appointment
+    private String notes;               // Additional notes/comments
+    private String createdDate;         // Original creation timestamp
+    private String lastModified;        // Last update timestamp
 
+    // Default constructor for object creation
     public Appointment() { }
 
+    // Primary constructor with all appointment attributes
     public Appointment(String id,
                        String patientId,
                        String clinicianId,
@@ -46,7 +49,8 @@ public class Appointment {
         this.createdDate = createdDate;
         this.lastModified = lastModified;
     }
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Accessor methods for retrieving appointment data
     public String getId()                { return id; }
     public String getPatientId()         { return patientId; }
     public String getClinicianId()       { return clinicianId; }
@@ -61,6 +65,7 @@ public class Appointment {
     public String getCreatedDate()       { return createdDate; }
     public String getLastModified()      { return lastModified; }
 
+    // Mutator methods for updating appointment data
     public void setId(String id)                          { this.id = id; }
     public void setPatientId(String patientId)            { this.patientId = patientId; }
     public void setClinicianId(String clinicianId)        { this.clinicianId = clinicianId; }

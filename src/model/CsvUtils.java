@@ -6,6 +6,7 @@ import java.util.List;
 
 public class CsvUtils {
 
+    // Reads CSV file and returns data as list of string arrays
     public static List<String[]> readCsv(String path) throws IOException {
         List<String[]> rows = new ArrayList<>();
 
@@ -16,15 +17,16 @@ public class CsvUtils {
 
             while ((line = br.readLine()) != null) {
 
+               // Skip header row on first read
                 if (!headerSkipped) { 
                     headerSkipped = true; 
                     continue; 
                 }
 
-                // Split on commas that are NOT inside quotes
+             // Advanced split: commas not inside quotation marks
                 String[] values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
 
-                // Remove surrounding quotes (optional)
+             // Clean up values by removing surrounding quotes and whitespace
                 for (int i = 0; i < values.length; i++) {
                     values[i] = values[i].replaceAll("^\"|\"$", "").trim();
                 }
@@ -35,24 +37,24 @@ public class CsvUtils {
         return rows;
     }
 
+// Appends a single line to existing CSV file
     public static void appendLine(String path, String[] values) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(path, true))) {
+            // Write values as comma-separated line
             bw.write(String.join(",", values));
             bw.newLine();
         }
     }
-    
-    // ============================================================
-    // NEW METHOD: Write entire CSV file
-    // ============================================================
+    //Made By Misbah Al Rehman. SRN: 24173647
+ // Writes complete dataset to CSV file (overwrites existing content)
     public static void writeCsv(String path, List<String[]> data) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(path))) {
             for (String[] row : data) {
-                // Format each field - add quotes if needed
+                // Format each field with proper quote handling
                 String[] formattedRow = new String[row.length];
                 for (int i = 0; i < row.length; i++) {
                     String field = row[i];
-                    // Add quotes if field contains comma or quotes
+                    // Add quotes if field contains special characters
                     if (field.contains(",") || field.contains("\"")) {
                         field = "\"" + field.replace("\"", "\"\"") + "\"";
                     }
@@ -64,20 +66,17 @@ public class CsvUtils {
         }
     }
     
-    // ============================================================
-    // NEW METHOD: Read CSV with header included
-    // (Useful for rewriting the entire file)
-    // ============================================================
+    // Reads CSV file including header row (preserves complete structure)
     public static List<String[]> readCsvWithHeader(String path) throws IOException {
         List<String[]> rows = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // Split on commas that are NOT inside quotes
+                // Advanced split for CSV with quoted values
                 String[] values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
 
-                // Remove surrounding quotes (optional)
+                // Clean up values by removing surrounding quotes and whitespace
                 for (int i = 0; i < values.length; i++) {
                     values[i] = values[i].replaceAll("^\"|\"$", "").trim();
                 }

@@ -6,46 +6,36 @@ import java.util.List;
 
 public class AppointmentRepository {
 
+    // In-memory storage for appointment data
     private final List<Appointment> appointments = new ArrayList<>();
+    // File system path for persistent storage
     private final String csvPath;
 
+    // Constructor - loads data from CSV on initialization
     public AppointmentRepository(String csvPath) {
         this.csvPath = csvPath;
         load();
     }
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Loads appointment data from CSV file into memory
     private void load() {
         try {
             for (String[] row : CsvUtils.readCsv(csvPath)) {
-                // CSV columns (14):
-                // 0: appointment_id
-                // 1: patient_id
-                // 2: clinician_id
-                // 3: facility_id
-                // 4: appointment_date
-                // 5: appointment_time
-                // 6: duration_minutes
-                // 7: appointment_type
-                // 8: status
-                // 9: reason_for_visit
-                //10: notes
-                //11: created_date
-                //12: last_modified
-
+                // CSV column mapping: index to appointment field
                 Appointment a = new Appointment(
-                        row[0],  // id
-                        row[1],  // patient_id
-                        row[2],  // clinician_id
-                        row[3],  // facility_id
-                        row[4],  // appointment_date
-                        row[5],  // appointment_time
-                        row[6],  // duration_minutes
-                        row[7],  // appointment_type
-                        row[8],  // status
-                        row[9],  // reason_for_visit
-                        row[10], // notes
-                        row[11], // created_date
-                        row[12]  // last_modified
+                        row[0],  // id - appointment identifier
+                        row[1],  // patient_id - associated patient
+                        row[2],  // clinician_id - assigned clinician
+                        row[3],  // facility_id - location facility
+                        row[4],  // appointment_date - scheduled date
+                        row[5],  // appointment_time - scheduled time
+                        row[6],  // duration_minutes - appointment length
+                        row[7],  // appointment_type - service category
+                        row[8],  // status - current appointment state
+                        row[9],  // reason_for_visit - primary purpose
+                        row[10], // notes - additional information
+                        row[11], // created_date - initial creation date
+                        row[12]  // last_modified - most recent update
                 );
 
                 appointments.add(a);
@@ -55,26 +45,30 @@ public class AppointmentRepository {
         }
     }
 
+    // Returns all appointments in the repository
     public List<Appointment> getAll() {
         return appointments;
     }
 
-    // Optional but handy
+    // Generates next sequential appointment identifier
     public String generateNewId() {
         int max = 0;
         for (Appointment a : appointments) {
             try {
-                int n = Integer.parseInt(a.getId().substring(1)); // "A001" → 1
+                // Extract numeric portion from ID (e.g., "A001" → 1)
+                int n = Integer.parseInt(a.getId().substring(1));
                 if (n > max) max = n;
             } catch (Exception ignore) {}
         }
         return String.format("A%03d", max + 1);
     }
 
+    // Adds appointment to in-memory list only
     public void add(Appointment a) {
         appointments.add(a);
     }
 
+    // Adds appointment and appends to CSV file
     public void addAndAppend(Appointment a) {
         appointments.add(a);
         try {
@@ -98,35 +92,28 @@ public class AppointmentRepository {
         }
     }
     
-    // ============================================================
-    // NEW METHOD: UPDATE APPOINTMENT + UPDATE CSV
-    // ============================================================
+    // Updates existing appointment in memory and CSV
     public void update(Appointment updatedAppointment) {
-        // Find the appointment by ID and update their information
         for (int i = 0; i < appointments.size(); i++) {
             Appointment appointment = appointments.get(i);
             if (appointment.getId().equals(updatedAppointment.getId())) {
-                // Update the appointment in the list
+                // Replace appointment in memory
                 appointments.set(i, updatedAppointment);
-                
-                // Update the CSV file - rewrite entire file
+                // Persist changes to CSV file
                 saveAllToCsv();
                 return;
             }
         }
-        
         System.err.println("Appointment not found for update: " + updatedAppointment.getId());
     }
 
+    // Removes appointment from memory and updates CSV
     public void remove(Appointment a) {
         appointments.remove(a);
-        // Update CSV after removal
         saveAllToCsv();
     }
     
-    // ============================================================
-    // NEW METHOD: REMOVE BY ID
-    // ============================================================
+    // Removes appointment by identifier
     public void removeById(String id) {
         Appointment appointmentToRemove = null;
         for (Appointment a : appointments) {
@@ -141,15 +128,14 @@ public class AppointmentRepository {
         }
     }
 
+    // Retrieves appointment by unique identifier
     public Appointment findById(String id) {
         for (Appointment a : appointments)
             if (a.getId().equals(id)) return a;
         return null;
     }
     
-    // ============================================================
-    // NEW METHOD: FIND APPOINTMENTS BY PATIENT ID
-    // ============================================================
+    // Returns all appointments for specific patient
     public List<Appointment> findByPatientId(String patientId) {
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment a : appointments) {
@@ -160,9 +146,7 @@ public class AppointmentRepository {
         return patientAppointments;
     }
     
-    // ============================================================
-    // NEW METHOD: FIND APPOINTMENTS BY CLINICIAN ID
-    // ============================================================
+    // Returns all appointments for specific clinician
     public List<Appointment> findByClinicianId(String clinicianId) {
         List<Appointment> clinicianAppointments = new ArrayList<>();
         for (Appointment a : appointments) {
@@ -173,14 +157,12 @@ public class AppointmentRepository {
         return clinicianAppointments;
     }
     
-    // ============================================================
-    // NEW METHOD: SAVE ALL APPOINTMENTS TO CSV
-    // ============================================================
+    // Writes all appointments to CSV file (full persistence)
     private void saveAllToCsv() {
         try {
             List<String[]> allData = new ArrayList<>();
             
-            // Add header row first (based on your CSV structure)
+            // Add CSV header row with column names
             allData.add(new String[]{
                 "appointment_id", "patient_id", "clinician_id", "facility_id",
                 "appointment_date", "appointment_time", "duration_minutes",
@@ -188,7 +170,7 @@ public class AppointmentRepository {
                 "created_date", "last_modified"
             });
             
-            // Add all appointments
+            // Convert all appointments to CSV rows
             for (Appointment a : appointments) {
                 allData.add(new String[]{
                     a.getId(),
@@ -207,7 +189,7 @@ public class AppointmentRepository {
                 });
             }
             
-            // Write to CSV using the writeCsv method
+            // Write complete dataset to CSV file
             CsvUtils.writeCsv(csvPath, allData);
             
         } catch (IOException ex) {

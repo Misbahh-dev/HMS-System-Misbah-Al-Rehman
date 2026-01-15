@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ReferralController {
 
+    // Core dependencies for managing referral data
     private final ReferralManager referralManager;
     private final PatientRepository patientRepo;
     private final ClinicianRepository clinicianRepo;
@@ -15,7 +16,7 @@ public class ReferralController {
     private final AppointmentRepository appointmentRepo;
     private final ReferralView view;
     
-    // NEW FIELD: Current clinician ID for filtering
+    // Current user context for filtering referrals
     private String currentClinicianId;
 
     public ReferralController(ReferralManager rm,
@@ -31,44 +32,36 @@ public class ReferralController {
         this.facilityRepo = fr;
         this.appointmentRepo = ar;
         this.view = view;
-        this.currentClinicianId = null; // Initialize as null
+        this.currentClinicianId = null;
 
-        // hook controller into view
         this.view.setController(this);
-
         refreshReferrals();
     }
-
-    // ---------------------------------------------
-    // VIEW HOOKS
-    // ---------------------------------------------
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Returns the view component for UI display
     public ReferralView getView() {
         return view;
     }
 
-    // MODIFIED: Added overloaded refresh method with clinician filter
+    // Refreshes referrals filtered by specific clinician
     public void refreshReferrals(String clinicianId) {
         if (clinicianId != null && !clinicianId.isEmpty()) {
-            // Show filtered referrals for this clinician
             view.showReferrals(getReferralsForClinician(clinicianId));
         } else {
-            // Staff/Admin sees all referrals
             view.showReferrals(referralManager.getAllReferrals());
         }
     }
 
-    // NEW: Overload for backward compatibility
+    // Refreshes all referrals (no filtering)
     public void refreshReferrals() {
         refreshReferrals(null);
     }
 
-    // ---------------------------------------------
-    // NEW: Filter referrals for a specific clinician
-    // ---------------------------------------------
+    // Returns referrals involving specific clinician
     public List<Referral> getReferralsForClinician(String clinicianId) {
         List<Referral> filtered = new ArrayList<>();
         for (Referral r : referralManager.getAllReferrals()) {
-            // Check if clinician appears in either "from clin" OR "to clin"
+            // Include referrals where clinician is either sender or receiver
             if (clinicianId.equals(r.getReferringClinicianId()) || 
                 clinicianId.equals(r.getReferredToClinicianId())) {
                 filtered.add(r);
@@ -77,50 +70,39 @@ public class ReferralController {
         return filtered;
     }
 
-    // ---------------------------------------------
-    // NEW: Getter and Setter for current clinician ID
-    // ---------------------------------------------
+    // Sets current clinician for filtered view
     public void setCurrentClinicianId(String clinicianId) {
         this.currentClinicianId = clinicianId;
-        refreshReferrals(clinicianId);  // Refresh with filter
+        refreshReferrals(clinicianId);
     }
     
+    // Returns current clinician ID for context
     public String getCurrentClinicianId() {
         return currentClinicianId;
     }
     
-    // ============================================================
-    // NEW: Set current staff ID for filtering (for staff)
-    // ============================================================
+    // Configures view for staff users with read-only access
     public void setCurrentStaffId(String staffId) {
-        this.currentClinicianId = null; // Clear clinician ID
+        this.currentClinicianId = null;
         view.setReadOnlyMode(true);
-        // STAFF VIEW: Can view all referrals
-        refreshReferrals(null); // Show all referrals (no filtering)
+        refreshReferrals(null);
     }
     
-    // ============================================================
-    // NEW: Method for staff to view all referrals (admin view)
-    // ============================================================
+    // Configures administrative view with full access
     public void setAdminView() {
         this.currentClinicianId = null;
-         view.setReadOnlyMode(false);
-         view.setTitle("Referral Management (Admin Mode)");
-         view.showUpdateDeleteButtons();
-        refreshReferrals(null); // Show all referrals
+        view.setReadOnlyMode(false);
+        view.setTitle("Referral Management (Admin Mode)");
+        view.showUpdateDeleteButtons();
+        refreshReferrals(null);
     }
     
-    
-    // ============================================================
-    // NEW: Check if current user is staff/admin
-    // ============================================================
+    // Checks if current view is staff/administrator
     public boolean isStaffView() {
         return currentClinicianId == null;
     }
 
-    // ---------------------------------------------
-    // COMBOBOX DATA
-    // ---------------------------------------------
+    // Returns all patient IDs for dropdown population
     public List<String> getPatientIds() {
         List<String> ids = new ArrayList<>();
         for (Patient p : patientRepo.getAll()) {
@@ -129,6 +111,7 @@ public class ReferralController {
         return ids;
     }
 
+    // Returns all clinician IDs for dropdown population
     public List<String> getClinicianIds() {
         List<String> ids = new ArrayList<>();
         for (Clinician c : clinicianRepo.getAll()) {
@@ -137,6 +120,7 @@ public class ReferralController {
         return ids;
     }
 
+    // Returns all facility IDs for dropdown population
     public List<String> getFacilityIds() {
         List<String> ids = new ArrayList<>();
         for (Facility f : facilityRepo.getAll()) {
@@ -145,6 +129,7 @@ public class ReferralController {
         return ids;
     }
 
+    // Returns all appointment IDs for dropdown population
     public List<String> getAppointmentIds() {
         List<String> ids = new ArrayList<>();
         for (Appointment a : appointmentRepo.getAll()) {
@@ -153,15 +138,11 @@ public class ReferralController {
         return ids;
     }
 
-    // ---------------------------------------------
-    // AUTO ID GENERATOR
-    // ---------------------------------------------
+    // Generates next sequential referral ID
     public String getNextReferralId() {
-
         int max = 0;
-
         for (Referral r : referralManager.getAllReferrals()) {
-            String id = r.getId();   // Example: "R012"
+            String id = r.getId();
             if (id != null && id.startsWith("R")) {
                 try {
                     int num = Integer.parseInt(id.substring(1));
@@ -169,33 +150,24 @@ public class ReferralController {
                 } catch (NumberFormatException ignored) {}
             }
         }
-
         int next = max + 1;
         return String.format("R%03d", next);
     }
 
-    // ---------------------------------------------
-    // ADD REFERRAL
-    // ---------------------------------------------
+    // Creates new referral and updates display
     public void addReferral(Referral r) {
-        referralManager.createReferral(r);   // Saves CSV + writes text file
+        referralManager.createReferral(r);
         refreshReferrals();
     }
     
-    // ============================================================
-    //  Update referral
-    // ============================================================
+    // Updates existing referral information
     public void updateReferral(Referral r) {
-        // Check permissions if needed (optional)
         referralManager.updateReferral(r);
         refreshReferrals();
     }
     
-     // ============================================================
-    // ADDED: Delete referral method
-    // ============================================================
+    // Deletes referral by identifier
     public void deleteReferral(String id) {
-        // Check permissions if needed (optional)
         referralManager.deleteReferral(id);
         refreshReferrals();
     }

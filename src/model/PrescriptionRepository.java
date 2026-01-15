@@ -5,50 +5,52 @@ import java.util.*;
 
 public class PrescriptionRepository {
 
+    // In-memory storage for prescription records
     private final List<Prescription> prescriptions = new ArrayList<>();
+    // File system path for CSV persistence
     private final String csvPath;
 
-    // CSV has EXACTLY 15 columns
+    // CSV structure definition - exactly 15 columns expected
     private static final int COLUMN_COUNT = 15;
 
+    // Constructor - loads data from CSV file on initialization
     public PrescriptionRepository(String csvPath) {
         this.csvPath = csvPath;
         load();
     }
-
-    // ============================================================
-    // LOAD ALL PRESCRIPTIONS SAFELY
-    // ============================================================
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Loads prescription data from CSV with safety validation
     private void load() {
         try {
             for (String[] row : CsvUtils.readCsv(csvPath)) {
 
-                // Skip header row
+                // Skip header row and empty entries
                 if (row.length == 0 || row[0].equalsIgnoreCase("prescription_id"))
                     continue;
 
-                // Guarantee 15 columns to prevent ArrayIndexOutOfBounds
+                // Ensure consistent column count to prevent indexing errors
                 String[] safe = new String[COLUMN_COUNT];
                 for (int i = 0; i < COLUMN_COUNT; i++) {
                     safe[i] = (i < row.length) ? row[i] : "";
                 }
 
+                // Create Prescription object from CSV data
                 Prescription p = new Prescription(
-                        safe[0], // prescription_id
-                        safe[1], // patient_id
-                        safe[2], // clinician_id
-                        safe[3], // appointment_id
-                        safe[4], // prescription_date
-                        safe[5], // medication_name
-                        safe[6], // dosage
-                        safe[7], // frequency
-                        safe[8], // duration_days
-                        safe[9], // quantity
-                        safe[10],// instructions
-                        safe[11],// pharmacy_name
-                        safe[12],// status
-                        safe[13],// issue_date
-                        safe[14] // collection_date
+                        safe[0], // prescription_id - unique identifier
+                        safe[1], // patient_id - prescribed patient
+                        safe[2], // clinician_id - prescribing clinician
+                        safe[3], // appointment_id - related appointment
+                        safe[4], // prescription_date - creation date
+                        safe[5], // medication_name - drug name
+                        safe[6], // dosage - strength and unit
+                        safe[7], // frequency - administration schedule
+                        safe[8], // duration_days - treatment length
+                        safe[9], // quantity - total amount dispensed
+                        safe[10],// instructions - usage directions
+                        safe[11],// pharmacy_name - dispensing location
+                        safe[12],// status - prescription state
+                        safe[13],// issue_date - original issue date
+                        safe[14] // collection_date - patient pickup date
                 );
 
                 prescriptions.add(p);
@@ -59,19 +61,19 @@ public class PrescriptionRepository {
         }
     }
 
+    // Returns all prescription records in the repository
     public List<Prescription> getAll() {
         return prescriptions;
     }
 
-    // ============================================================
-    // AUTO-GENERATE RX IDs
-    // ============================================================
+    // Generates next sequential prescription identifier
     public String generateNewId() {
         int max = 0;
         for (Prescription p : prescriptions) {
             try {
                 String id = p.getId();
                 if (id != null && id.startsWith("RX")) {
+                    // Extract numeric portion from ID (e.g., "RX001" → 1)
                     int num = Integer.parseInt(id.substring(2));
                     if (num > max) max = num;
                 }
@@ -80,9 +82,7 @@ public class PrescriptionRepository {
         return String.format("RX%03d", max + 1);
     }
 
-    // ============================================================
-    // DROPDOWN OPTIONS
-    // ============================================================
+    // Returns unique medication names for dropdown population
     public List<String> getMedicationOptions() {
         Set<String> meds = new TreeSet<>();
         for (Prescription p : prescriptions) {
@@ -92,6 +92,7 @@ public class PrescriptionRepository {
         return new ArrayList<>(meds);
     }
 
+    // Returns unique pharmacy names for dropdown population
     public List<String> getPharmacyOptions() {
         Set<String> pharms = new TreeSet<>();
         for (Prescription p : prescriptions) {
@@ -101,13 +102,9 @@ public class PrescriptionRepository {
         return new ArrayList<>(pharms);
     }
 
-    // ============================================================
-    // ADD + APPEND TO CSV
-    // ============================================================
+    // Adds prescription to memory and appends to CSV file
     public void addAndAppend(Prescription p) {
-
         prescriptions.add(p);
-
         try {
             CsvUtils.appendLine(csvPath, new String[]{
                     p.getId(),
@@ -126,15 +123,12 @@ public class PrescriptionRepository {
                     p.getIssueDate(),
                     p.getCollectionDate()
             });
-
         } catch (IOException ex) {
             System.err.println("Failed to append prescription: " + ex.getMessage());
         }
     }
 
-    // ============================================================
-    // UPDATE IN-MEMORY ENTRY (no CSV rewrite)
-    // ============================================================
+    // Updates existing prescription in memory 
     public void update(Prescription p) {
         for (int i = 0; i < prescriptions.size(); i++) {
             if (prescriptions.get(i).getId().equals(p.getId())) {
@@ -144,8 +138,9 @@ public class PrescriptionRepository {
         }
     }
 
+    // Removes prescription by identifier from memory
     public void removeById(String id) {
         prescriptions.removeIf(p -> p.getId().equals(id));
-        // No CSV rewrite—acceptable for coursework
+        // Note: CSV file not rewritten 
     }
 }

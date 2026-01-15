@@ -2,25 +2,32 @@ package model;
 
 public class Referral {
 
-    private String id;                    // referral_id
-    private String patientId;             // patient_id
-    private String referringClinicianId;  // referring_clinician
-    private String referredToClinicianId; // referred_to
-    private String referringFacilityId;   // referring_facility
-    private String referredToFacilityId;  // referred_to_facility
-    private String referralDate;          // referral_date
-    private String urgencyLevel;          // urgency_level
-    private String referralReason;        // referral_reason
-    private String clinicalSummary;       // clinical_summary
-    private String requestedService;      // requested_service
-    private String status;                // status
-    private String appointmentId;         // appointment_id
-    private String notes;                 // notes
-    private String createdDate;           // created_date
-    private String lastUpdated;           // last_updated
+    // Core referral identification and attribution
+    private String id;                    // Unique referral identifier
+    private String patientId;             // Referred patient identifier
+    private String referringClinicianId;  // Originating clinician identifier
+    private String referredToClinicianId; // Destination clinician identifier
+    private String referringFacilityId;   // Originating facility identifier
+    private String referredToFacilityId;  // Destination facility identifier
+    private String referralDate;          // Referral creation date
+    
+    // Clinical information and classification
+    private String urgencyLevel;          // Clinical urgency classification
+    private String referralReason;        // Primary reason for referral
+    private String clinicalSummary;       // Comprehensive clinical summary
+    private String requestedService;      // Requested investigation/service
+    
+    // Referral tracking and administration
+    private String status;                // Current referral status
+    private String appointmentId;         // Associated appointment identifier
+    private String notes;                 // Additional administrative notes
+    private String createdDate;           // System creation timestamp
+    private String lastUpdated;           // Most recent update timestamp
 
+    // Default constructor for object instantiation
     public Referral() {}
 
+    // Primary constructor with all referral attributes
     public Referral(String id, String patientId, String referringClinicianId,
                     String referredToClinicianId, String referringFacilityId,
                     String referredToFacilityId, String referralDate,
@@ -47,10 +54,10 @@ public class Referral {
         this.lastUpdated = lastUpdated;
     }
 
-    // Getters and Setters  
+    // Getters and Setters for referral data
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-
+//Made By Misbah Al Rehman. SRN: 24173647
     public String getPatientId() { return patientId; }
     public void setPatientId(String patientId) { this.patientId = patientId; }
 

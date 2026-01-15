@@ -8,78 +8,70 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 public class ClinicianController {
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Data repository for clinician information
     public final ClinicianRepository repository;
+    // UI component for displaying clinician data
     private final ClinicianView view;
-    private String currentUserId; // ADDED: Store user ID for logout
-    private String currentUserRole; // ADDED: Store user role for logout
-    private String currentClinicianId; // For filtering clinician data
     
-    // ============================================================
-    // ADDED: Field to track next ID for adding new clinicians
-    // ============================================================
+    // User context tracking for access control
+    private String currentUserId;    
+    private String currentUserRole;  
+    private String currentClinicianId; 
+    
+    // Next available ID for new clinician records
     private String nextClinicianId;
 
     public ClinicianController(ClinicianRepository repo, ClinicianView view) {
         this.repository = repo;
         this.view = view;
         this.view.setController(this);
-        // ============================================================
-        // ADDED: Initialize next ID and setup initial view state
-        // ============================================================
+        
+        // Initialize next ID and configure default UI state
         this.nextClinicianId = repository.generateNewId();
         view.setNextId(nextClinicianId);
-        setupForUserRole(); // Initialize UI based on user role
+        setupForUserRole();
         refresh();
     }
     
-    // ============================================================
-    // ADDED: Setup view based on user role
-    // ============================================================
+    // Configures initial UI state for security purposes
     private void setupForUserRole() {
-        // Initially assume clinician view (most restrictive)
         view.setReadOnlyMode(true);
         view.hideAddDeleteButtons();
         view.showUpdateButton();
         view.setTitle("My Profile");
     }
     
-    // ============================================================
-    // NEW METHOD: Set current clinician ID for filtering
-    // Called by LoginController when clinician logs in
-    // ============================================================
+    // Configures controller for logged-in clinician access
     public void setCurrentClinicianId(String clinicianId) {
         this.currentClinicianId = clinicianId;
-        this.currentUserId = clinicianId; // ADDED: Store user ID
-        this.currentUserRole = "CLINICIAN"; // ADDED: Store user role
+        this.currentUserId = clinicianId;
+        this.currentUserRole = "CLINICIAN";
         
-        // ============================================================
-        // ADDED: Update UI based on whether it's a clinician or staff/admin
-        // ============================================================
+        // Set appropriate UI permissions based on user type
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // CLINICIAN VIEW: Read-only mode except for own updates
-            view.setReadOnlyMode(false); // Allow updates to own info
-            view.hideAddDeleteButtons(); // Clinicians can't add/delete other clinicians
-            view.showUpdateButton(); // But can update their own info
+            // Clinician view: Limited access to own data only
+            view.setReadOnlyMode(false);
+            view.hideAddDeleteButtons();
+            view.showUpdateButton();
             view.setTitle("My Profile");
         } else {
-            // STAFF/ADMIN VIEW: Full access
+            // Staff/admin view: Full system access
             view.setReadOnlyMode(false);
-            view.showAllButtons(); // Show Add, Update, and Delete buttons
+            view.showAllButtons();
             view.setTitle("Clinician Management");
-            view.setNextId(repository.generateNewId()); // Set next ID for adding
+            view.setNextId(repository.generateNewId());
         }
         
-        refresh(); // Refresh to potentially show filtered data
+        refresh();
     }
     
-    // ============================================================
-    // ADDED: Unified method for LoginController (optional)
-    // ============================================================
+    // Sets user context from login system
     public void setUserContext(String userId, String role) {
         if ("CLINICIAN".equals(role)) {
             setCurrentClinicianId(userId);
         } else {
+            // Staff/admin users get full access
             this.currentUserId = null;
             this.currentUserRole = role;
             this.currentClinicianId = null;
@@ -95,44 +87,34 @@ public class ClinicianController {
         return view;
     }
     
-    // ============================================================
-    // ID GENERATOR
-    // ============================================================
+    // Generates next unique clinician identifier
     public String generateId() {
         return repository.generateNewId();
     }
 
-    // ============================================================
-    // MODIFIED: Show filtered clinicians based on user role
-    // ============================================================
+    // Refreshes clinician display based on user permissions
     public void refresh() {
         List<Clinician> cliniciansToShow;
         
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // If a clinician is logged in, they only see their own profile
+            // Show only logged-in clinician's profile
             Clinician currentClinician = repository.findById(currentClinicianId);
             cliniciansToShow = new ArrayList<>();
             if (currentClinician != null) {
                 cliniciansToShow.add(currentClinician);
             }
         } else {
-            // Staff/Admin/Patient view: Show all clinicians
+            // Show all clinicians for staff/admin view
             cliniciansToShow = repository.getAll();
         }
         
         view.showClinicians(cliniciansToShow);
     }
 
-    // ============================================================
-    // MODIFIED: Add security checks for clinician creation
-    // ============================================================
+    // Adds new clinician with appropriate permission checks
     public void addClinician(Clinician c) {
-        // Security check: Clinicians shouldn't be able to add other clinicians
-        // Only staff/admin should be able to add clinicians
+        // Prevent clinicians from creating other clinician accounts
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // ============================================================
-            // ADDED: Show error message for clinicians trying to add
-            // ============================================================
             JOptionPane.showMessageDialog(view, 
                 "Clinicians cannot add new clinician records.", 
                 "Access Denied", 
@@ -143,9 +125,7 @@ public class ClinicianController {
         repository.addAndAppend(c);
         refresh();
         
-        // ============================================================
-        // ADDED: Update next ID and show success message
-        // ============================================================
+        // Update next available ID after successful addition
         nextClinicianId = repository.generateNewId();
         view.setNextId(nextClinicianId);
         JOptionPane.showMessageDialog(view, 
@@ -154,11 +134,8 @@ public class ClinicianController {
             JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // ============================================================
-    // ADDED: Update clinician method with proper permissions
-    // ============================================================
+    // Updates clinician information with permission validation
     public void updateClinician(Clinician c) {
-        // Find the original clinician to check permissions
         Clinician original = repository.findById(c.getId());
         
         if (original == null) {
@@ -169,9 +146,9 @@ public class ClinicianController {
             return;
         }
         
-        // Check user permissions
+        // Apply role-based update permissions
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // CLINICIAN: Can only update their own record
+            // Clinicians can only update their own profiles
             if (!c.getId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only update your own profile.", 
@@ -180,7 +157,6 @@ public class ClinicianController {
                 return;
             }
             
-            // Clinicians can update their own info
             repository.update(c);
             JOptionPane.showMessageDialog(view, 
                 "Your profile has been updated!", 
@@ -188,7 +164,7 @@ public class ClinicianController {
                 JOptionPane.INFORMATION_MESSAGE);
             
         } else {
-            // STAFF/ADMIN: Can update any clinician
+            // Staff/admin can update any clinician record
             repository.update(c);
             JOptionPane.showMessageDialog(view, 
                 "Clinician updated successfully!", 
@@ -199,26 +175,21 @@ public class ClinicianController {
         refresh();
     }
 
-    // ============================================================
-    // MODIFIED: Add security checks for clinician deletion
-    // ============================================================
+    // Deletes clinician with comprehensive permission checks
     public void deleteById(String id) {
         Clinician c = repository.findById(id);
         if (c != null) {
-            // Security check based on user role
             boolean canDelete = true;
             
             if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-                // A clinician is logged in
+                // Clinicians cannot delete any clinician records
                 if (c.getId().equals(currentClinicianId)) {
-                    // Clinician trying to delete themselves
                     JOptionPane.showMessageDialog(view, 
                         "You cannot delete your own account.", 
                         "Access Denied", 
                         JOptionPane.WARNING_MESSAGE);
                     canDelete = false;
                 } else {
-                    // Clinician trying to delete another clinician
                     JOptionPane.showMessageDialog(view, 
                         "Clinicians cannot delete other clinician records.", 
                         "Access Denied", 
@@ -227,14 +198,9 @@ public class ClinicianController {
                 }
             }
             
-            // Staff/Admin can delete any clinician (no currentClinicianId set)
-            
             if (canDelete) {
                 repository.remove(c);
                 refresh();
-                // ============================================================
-                // ADDED: Update next ID after deletion
-                // ============================================================
                 nextClinicianId = repository.generateNewId();
                 view.setNextId(nextClinicianId);
                 JOptionPane.showMessageDialog(view, 
@@ -245,9 +211,7 @@ public class ClinicianController {
         }
     }
     
-    // ============================================================
-    // NEW METHOD: Get current clinician (useful for other controllers)
-    // ============================================================
+    // Returns currently logged-in clinician object
     public Clinician getCurrentClinician() {
         if (currentClinicianId != null) {
             return repository.findById(currentClinicianId);
@@ -255,34 +219,23 @@ public class ClinicianController {
         return null;
     }
     
-    // ============================================================
-    // NEW METHOD: Check if user is viewing their own data
-    // ============================================================
+    // Checks if user is viewing their own clinician data
     public boolean isViewingOwnData(String clinicianId) {
         return currentClinicianId != null && currentClinicianId.equals(clinicianId);
     }
     
-    // ============================================================
-    // ADDED: Check if current user is a clinician
-    // ============================================================
+    // Determines if current view is clinician-restricted
     public boolean isClinicianView() {
         return currentClinicianId != null && !currentClinicianId.isEmpty();
     }
     
-    // ============================================================
-    // NEW METHOD: Clear current clinician ID (for logout)
-    // ============================================================
+    // Clears current clinician context for logout
     public void clearCurrentClinician() {
         this.currentClinicianId = null;
-        // ============================================================
-        // ADDED: Reset to initial state on logout
-        // ============================================================
         setupForUserRole();
     }
     
-    // ============================================================
-    // NEW METHOD: Get clinicians by specialty (if needed)
-    // ============================================================
+    // Filters clinicians by medical specialty
     public List<Clinician> getCliniciansBySpecialty(String specialty) {
         List<Clinician> filtered = new ArrayList<>();
         for (Clinician c : repository.getAll()) {
@@ -293,9 +246,7 @@ public class ClinicianController {
         return filtered;
     }
     
-    // ============================================================
-    // ADDED: Get all clinician IDs for dropdowns in other views
-    // ============================================================
+    // Returns all clinician IDs for selection purposes
     public List<String> getAllClinicianIds() {
         List<String> ids = new ArrayList<>();
         for (Clinician c : repository.getAll()) {

@@ -2,23 +2,25 @@ package model;
 
 public class Patient {
 
-    private String id;
-    private String firstName;
-    private String lastName;
-    private String dateOfBirth;
-    private String nhsNumber;
-    private String gender;
-    private String phoneNumber;
-    private String email;
-    private String address;
-    private String postcode;
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-    private String registrationDate;
-    private String gpSurgeryId;
+    // Core patient identification and personal information
+    private String id;                      // Unique patient identifier
+    private String firstName;               // Patient's given name
+    private String lastName;                // Patient's family name
+    private String dateOfBirth;             // Patient's birth date
+    private String nhsNumber;               // National Health Service number
+    private String gender;                  // Patient's gender identity
+    private String phoneNumber;             // Primary contact telephone
+    private String email;                   // Primary contact email
+    private String address;                 // Residential street address
+    private String postcode;                // Residential postal code
+    private String emergencyContactName;    // Emergency contact person
+    private String emergencyContactPhone;   // Emergency contact telephone
+    private String registrationDate;        // System registration date
+    private String gpSurgeryId;             // Registered general practitioner
 
+    // Default constructor 
     public Patient() {}
-
+// Primary constructor with all patient attributes
     public Patient(String id, String firstName, String lastName,
                    String dateOfBirth, String nhsNumber, String gender,
                    String phoneNumber, String email, String address, String postcode,
@@ -45,10 +47,8 @@ public class Patient {
     public String getName() {
         return getFullName();
     }
-
-    // ============================================================
-    // GETTERS
-    // ============================================================
+//Made By Misbah Al Rehman. SRN: 24173647
+    // getters for retrieving patient data
     public String getId() { return id; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
@@ -66,9 +66,7 @@ public class Patient {
     public String getRegistrationDate() { return registrationDate; }
     public String getGpSurgeryId() { return gpSurgeryId; }
 
-    // ============================================================
-    // SETTERS
-    // ============================================================
+    // setters for updating patient data or setters
     public void setId(String id) { this.id = id; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public void setLastName(String lastName) { this.lastName = lastName; }

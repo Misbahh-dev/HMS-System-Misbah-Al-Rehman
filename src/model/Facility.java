@@ -2,20 +2,23 @@ package model;
 
 public class Facility {
 
-    private String id;
-    private String name;
-    private String type;               // GP Surgery / Hospital
-    private String address;
-    private String postcode;
-    private String phone;
-    private String email;
-    private String openingHours;
-    private String managerName;
-    private int capacity;
-    private String specialities;
+    // Core facility identification and information
+    private String id;              // Unique facility identifier
+    private String name;            // Facility display name
+    private String type;            // Facility category (GP Surgery/Hospital)
+    private String address;         // Physical street address
+    private String postcode;        // Postal/ZIP code
+    private String phone;           // Contact telephone number
+    private String email;           // Contact email address
+    private String openingHours;    // Operating hours schedule
+    private String managerName;     // Facility manager/administrator
+    private int capacity;           // Maximum patient capacity
+    private String specialities;    // Medical specialties available
 
+    // Default constructor for object instantiation
     public Facility() { }
 
+    // Primary constructor with all facility attributes
     public Facility(String id, String name, String type,
                     String address, String postcode, String phone,
                     String email, String openingHours, String managerName,
@@ -34,7 +37,7 @@ public class Facility {
         this.specialities = specialities;
     }
 
-    // Getters & Setters
+    // Accessor and mutator methods for facility data
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -46,7 +49,7 @@ public class Facility {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-
+//Made By Misbah Al Rehman. SRN: 24173647
     public String getPostcode() { return postcode; }
     public void setPostcode(String postcode) { this.postcode = postcode; }
 
@@ -68,6 +71,7 @@ public class Facility {
     public String getSpecialities() { return specialities; }
     public void setSpecialities(String specialities) { this.specialities = specialities; }
 
+    // String representation for display purposes
     @Override
     public String toString() {
         return id + " - " + name;

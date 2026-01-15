@@ -2,209 +2,201 @@ package controller;
 
 import model.*;
 import view.*;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
-import javax.swing.JOptionPane; // ADDED: For user feedback messages
+import javax.swing.JOptionPane;
 
 public class AppointmentController {
-
+//Made By Misbah Al Rehman. SRN: 24173647
+    // Core dependencies for managing appointment data
     private final AppointmentRepository repo;
     private final PatientRepository patientRepo;
     private final ClinicianRepository clinicianRepo;
     private final FacilityRepository facilityRepo;
     private final AppointmentView view;
+    
+    // Formatter for consistent date handling
     private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private String currentPatientId; // For filtering appointments by patient
-    private String currentClinicianId; // For filtering appointments by clinician
-    private String currentUserRole; // ADDED: Track user role for better access control
+    
+    // User context for filtering and permissions
+    private String currentPatientId;
+    private String currentClinicianId;
+    private String currentUserRole;
 
+    // Initializes controller with all required repositories
     public AppointmentController(AppointmentRepository repo,
                                  PatientRepository patientRepo,
                                  ClinicianRepository clinicianRepo,
                                  FacilityRepository facilityRepo,
                                  AppointmentView view) {
 
+        // Set up repository connections for data access
         this.repo = repo;
         this.patientRepo = patientRepo;
         this.clinicianRepo = clinicianRepo;
         this.facilityRepo = facilityRepo;
         this.view = view;
 
+        // Connect controller to view and initialize UI
         view.setController(this);
-        setupForUserRole(); // ADDED: Initialize based on user role
+        setupForUserRole();
         refreshAppointments();
         view.loadDropdowns(getPatientIds(), getClinicianIds(), getFacilityIds());
     }
     
-    // ============================================================
-    // ADDED: Setup based on user role
-    // ============================================================
+    // Configures UI for default user role on startup
     private void setupForUserRole() {
-        // Initially assume patient view (most restrictive)
-        // This will be updated when setCurrentPatientId/setCurrentClinicianId is called
+        // Start with read-only patient view for security
         view.setReadOnlyMode(true);
         view.hideAddDeleteButtons();
         view.setTitle("My Appointments");
-        
         refreshAppointments();
     }
     
-    // ============================================================
-    // NEW METHOD: Set user context (called by LoginController)
-    // ============================================================
+    // Sets user identity and permissions after login
     public void setUserContext(String userId, String role) {
         this.currentUserRole = role;
         
+        // Route to appropriate view based on user type
         if ("PATIENT".equals(role)) {
             setCurrentPatientId(userId);
         } else if ("CLINICIAN".equals(role)) {
             setCurrentClinicianId(userId);
         } else {
-            // Staff/Admin: No filtering, show all
+            // Staff or admin users get full access
             setStaffView();
         }
     }
     
-    // ============================================================
-    // NEW METHOD: Setup staff view (no filtering)
-    // ============================================================
+    // Enables full system access for staff members
     public void setStaffView() {
         this.currentPatientId = null;
         this.currentClinicianId = null;
         this.currentUserRole = "STAFF";
         
+        // Grant edit permissions and show all controls
         view.setReadOnlyMode(false);
         view.showAllButtons();
         view.setTitle("Appointment Management");
         refreshAppointments();
     }
-     public void setAdminView() {
+    
+    // Administrative view with complete system control
+    public void setAdminView() {
         this.currentPatientId = null;
         this.currentClinicianId = null;
         this.currentUserRole = "ADMIN";
         
+        // Enable all administrative functions
         view.setReadOnlyMode(false);
         view.showAllButtons();
         view.setTitle("Appointment Management (Admin View)");
         refreshAppointments();
     }
 
-    // ============================================================
-    // Set current patient ID for filtering
-    // ============================================================
+    // Restricts view to only show appointments for this patient
     public void setCurrentPatientId(String patientId) {
         this.currentPatientId = patientId;
-        this.currentClinicianId = null; // Clear clinician ID
+        this.currentClinicianId = null;
         this.currentUserRole = "PATIENT";
         
-        // PATIENT VIEW
-        view.setReadOnlyMode(false); // Allow booking new appointments
+        // Patients can book new appointments but not edit others
+        view.setReadOnlyMode(false);
         view.hideUpdateButton();
         view.setTitle("My Appointments");
         
-        refreshAppointments(); // Refresh to show filtered data
+        refreshAppointments();
         view.loadDropdowns(getPatientIds(), getClinicianIds(), getFacilityIds());
     }
     
-    // ============================================================
-    // Set current clinician ID for filtering
-    // ============================================================
+    // Filters view to appointments assigned to this clinician
     public void setCurrentClinicianId(String clinicianId) {
         this.currentClinicianId = clinicianId;
-        this.currentPatientId = null; // Clear patient ID
+        this.currentPatientId = null;
         this.currentUserRole = "CLINICIAN";
         
-        // CLINICIAN VIEW: Edit mode but only for their appointments
+        // Clinicians can manage but not create/delete appointments
         view.setReadOnlyMode(false);
-        view.hideAddDeleteButtons(); // Clinicians can manage their appointments
+        view.hideAddDeleteButtons();
         view.setTitle("My Clinic Appointments");
         
-        refreshAppointments(); // Refresh to show filtered data
+        refreshAppointments();
         view.loadDropdowns(getPatientIds(), getClinicianIds(), getFacilityIds());
     }
 
+    // Returns the view component for UI display
     public AppointmentView getView() {
         return view;
     }
 
-    // ============================================================
-    // Show filtered appointments based on user role
-    // ============================================================
+    // Updates appointment display based on user permissions
     public void refreshAppointments() {
         List<Appointment> appointmentsToShow;
         
+        // Filter appointments based on user role
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient view: Show only this patient's appointments
             appointmentsToShow = getAppointmentsForPatient(currentPatientId);
-            
         } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician view: Show appointments for this clinician
             appointmentsToShow = getAppointmentsForClinician(currentClinicianId);
-            
         } else {
-            // Staff/Admin view: Show all appointments
+            // Staff/admin see all appointments
             appointmentsToShow = repo.getAll();
         }
         
         view.showAppointments(appointmentsToShow);
     }
 
+    // Generates unique ID for new appointment records
     public String generateId() {
         return repo.generateNewId();
     }
 
-    // ============================================================
-    // Filter patient IDs based on user role
-    // ============================================================
+    // Provides patient IDs appropriate for current user context
     public List<String> getPatientIds() {
         List<String> ids = new ArrayList<>();
         
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient can only see their own ID in dropdown
+            // Patients only see their own ID
             ids.add(currentPatientId);
         } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician: Can see all patient IDs (for booking appointments)
+            // Clinicians can see all patient IDs
             ids = patientRepo.getAllIds();
         } else {
-            // Staff/Admin: Can see all patient IDs
+            // Staff/admin can see all patient IDs
             ids = patientRepo.getAllIds();
         }
         return ids;
     }
 
-    // ============================================================
-    // MODIFIED: Filter clinician IDs based on user role
-    // ============================================================
+    // Provides clinician IDs appropriate for current user context
     public List<String> getClinicianIds() {
         List<String> ids = new ArrayList<>();
         
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician can only see their own ID in dropdown
+            // Clinicians only see their own ID
             ids.add(currentClinicianId);
         } else if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient: Can see all clinician IDs (for booking)
+            // Patients can see all clinician IDs
             ids = clinicianRepo.getAllIds();
         } else {
-            // Staff/Admin: Can see all clinician IDs
+            // Staff/admin can see all clinician IDs
             ids = clinicianRepo.getAllIds();
         }
         return ids;
     }
 
+    // Returns all facility IDs available in the system
     public List<String> getFacilityIds() {
         return facilityRepo.getAllIds();
     }
 
-    // ============================================================
-    // ADD APPOINTMENT with role-based security
-    // ============================================================
+    // Adds new appointment with proper permission validation
     public void addAppointment(Appointment a) {
-        // Security checks based on user role
+        // Patient-specific security checks
         if ("PATIENT".equals(currentUserRole)) {
-            // Patient is logged in: Ensure appointment is for them
+            // Patients can only book appointments for themselves
             if (!a.getPatientId().equals(currentPatientId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only book appointments for yourself.", 
@@ -213,7 +205,7 @@ public class AppointmentController {
                 return;
             }
             
-            // Patients can only book future appointments
+            // Patients cannot book appointments in the past
             LocalDate appointmentDate = LocalDate.parse(a.getAppointmentDate(), fmt);
             if (appointmentDate.isBefore(LocalDate.now())) {
                 JOptionPane.showMessageDialog(view, 
@@ -224,7 +216,7 @@ public class AppointmentController {
             }
             
         } else if ("CLINICIAN".equals(currentUserRole)) {
-            // Clinician: Can only create appointments where they are the clinician
+            // Clinicians can only create their own appointments
             if (!a.getClinicianId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only create appointments for yourself.", 
@@ -234,6 +226,7 @@ public class AppointmentController {
             }
         }
         
+        // Save appointment to repository and update UI
         repo.addAndAppend(a);
         refreshAppointments();
         
@@ -243,11 +236,9 @@ public class AppointmentController {
             JOptionPane.INFORMATION_MESSAGE);
     }
     
-    // ============================================================
-    // ADDED: UPDATE APPOINTMENT method
-    // ============================================================
+    // Updates existing appointment with permission checks
     public void updateAppointment(Appointment a) {
-        // Find the original appointment to check permissions
+        // Retrieve original appointment for permission validation
         Appointment original = repo.findById(a.getId());
         
         if (original == null) {
@@ -258,9 +249,8 @@ public class AppointmentController {
             return;
         }
         
-        // Check user permissions
+        // Patient-specific update permissions
         if ("PATIENT".equals(currentUserRole)) {
-            // PATIENT: Can only update their own appointments
             if (!original.getPatientId().equals(currentPatientId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only update your own appointments.", 
@@ -269,7 +259,6 @@ public class AppointmentController {
                 return;
             }
             
-            // Patients can update their appointments
             repo.update(a);
             JOptionPane.showMessageDialog(view, 
                 "Your appointment has been updated!", 
@@ -277,7 +266,7 @@ public class AppointmentController {
                 JOptionPane.INFORMATION_MESSAGE);
             
         } else if ("CLINICIAN".equals(currentUserRole)) {
-            // CLINICIAN: Can only update their own appointments
+            // Clinician-specific update permissions
             if (!original.getClinicianId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only update appointments you are assigned to.", 
@@ -286,7 +275,6 @@ public class AppointmentController {
                 return;
             }
             
-            // Clinicians can update their appointments
             repo.update(a);
             JOptionPane.showMessageDialog(view, 
                 "Appointment updated successfully!", 
@@ -294,7 +282,7 @@ public class AppointmentController {
                 JOptionPane.INFORMATION_MESSAGE);
             
         } else {
-            // STAFF/ADMIN: Can update any appointment
+            // Staff/admin can update any appointment
             repo.update(a);
             JOptionPane.showMessageDialog(view, 
                 "Appointment updated successfully!", 
@@ -305,15 +293,12 @@ public class AppointmentController {
         refreshAppointments();
     }
 
-    // ============================================================
-    // DELETE APPOINTMENT with role-based security
-    // ============================================================
+    // Deletes appointment with comprehensive permission validation
     public void deleteById(String id) {
         Appointment a = repo.findById(id);
         if (a != null) {
-            // Check user permissions
+            // Patient-specific deletion rules
             if ("PATIENT".equals(currentUserRole)) {
-                // Patient can only delete their own appointments
                 if (!a.getPatientId().equals(currentPatientId)) {
                     JOptionPane.showMessageDialog(view, 
                         "You can only cancel your own appointments.", 
@@ -322,7 +307,7 @@ public class AppointmentController {
                     return;
                 }
                 
-                // Patients can only cancel future appointments
+                // Patients cannot cancel past appointments
                 LocalDate appointmentDate = LocalDate.parse(a.getAppointmentDate(), fmt);
                 if (appointmentDate.isBefore(LocalDate.now())) {
                     JOptionPane.showMessageDialog(view, 
@@ -333,7 +318,7 @@ public class AppointmentController {
                 }
                 
             } else if ("CLINICIAN".equals(currentUserRole)) {
-                // Clinician can only delete their own appointments
+                // Clinician-specific deletion rules
                 if (!a.getClinicianId().equals(currentClinicianId)) {
                     JOptionPane.showMessageDialog(view, 
                         "You can only cancel appointments you are assigned to.", 
@@ -343,7 +328,7 @@ public class AppointmentController {
                 }
             }
             
-            // Ask for confirmation
+            // Confirm deletion with user to prevent accidental removal
             int confirm = JOptionPane.showConfirmDialog(view,
                 "Are you sure you want to delete appointment " + id + "?",
                 "Confirm Delete",
@@ -361,9 +346,7 @@ public class AppointmentController {
         refreshAppointments();
     }
     
-    // ============================================================
-    // Get appointments for specific patient
-    // ============================================================
+    // Retrieves all appointments for a specific patient
     public List<Appointment> getAppointmentsForPatient(String patientId) {
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment a : repo.getAll()) {
@@ -374,9 +357,7 @@ public class AppointmentController {
         return patientAppointments;
     }
     
-    // ============================================================
-    // Get appointments for specific clinician
-    // ============================================================
+    // Retrieves all appointments for a specific clinician
     public List<Appointment> getAppointmentsForClinician(String clinicianId) {
         List<Appointment> clinicianAppointments = new ArrayList<>();
         for (Appointment a : repo.getAll()) {
@@ -387,25 +368,18 @@ public class AppointmentController {
         return clinicianAppointments;
     }
     
-    // ============================================================
-    // NEW METHOD: Get current clinician ID
-    // ============================================================
+    // Returns current clinician ID for permission checks
     public String getCurrentClinicianId() {
         return currentClinicianId;
     }
     
-    // ============================================================
-    // NEW METHOD: Get current patient ID
-    // ============================================================
+    // Returns current patient ID for permission checks
     public String getCurrentPatientId() {
         return currentPatientId;
     }
     
-    // ============================================================
-    // NEW METHOD: Get current user role
-    // ============================================================
+    // Returns current user role for permission checks
     public String getCurrentUserRole() {
         return currentUserRole;
     }
-   
 }

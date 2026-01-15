@@ -8,42 +8,44 @@ import java.util.Set;
 
 public class PatientRepository {
 
+    // In-memory storage for patient records
     private final List<Patient> patients = new ArrayList<>();
+    // File system path for CSV persistence
     private final String csvPath;
 
+    // Constructor - loads data from CSV file on initialization
     public PatientRepository(String csvPath) {
         this.csvPath = csvPath;
         load();
     }
 
+    // Returns all patient identifiers for reference purposes
     public List<String> getAllIds() {
         List<String> ids = new ArrayList<>();
         for (Patient p : patients) ids.add(p.getId());
         return ids;
     }
 
-    // ============================================================
-    // LOAD PATIENTS FROM CSV (all 14 fields)
-    // ============================================================
+    // Loads patient data from CSV file into memory
     private void load() {
         try {
             for (String[] row : CsvUtils.readCsv(csvPath)) {
 
                 Patient p = new Patient(
-                        row[0],   // patient_id
-                        row[1],   // first_name
-                        row[2],   // last_name
-                        row[3],   // date_of_birth
-                        row[4],   // nhs_number
-                        row[5],   // gender
-                        row[6],   // phone_number
-                        row[7],   // email
-                        row[8],   // address
-                        row[9],   // postcode
-                        row[10],  // emergency_contact_name
-                        row[11],  // emergency_contact_phone
-                        row[12],  // registration_date
-                        row[13]   // gp_surgery_id
+                        row[0],   // patient_id - unique identifier
+                        row[1],   // first_name - given name
+                        row[2],   // last_name - family name
+                        row[3],   // date_of_birth - birth date
+                        row[4],   // nhs_number - national health identifier
+                        row[5],   // gender - gender identity
+                        row[6],   // phone_number - contact telephone
+                        row[7],   // email - contact email
+                        row[8],   // address - residential address
+                        row[9],   // postcode - postal code
+                        row[10],  // emergency_contact_name - emergency person
+                        row[11],  // emergency_contact_phone - emergency contact
+                        row[12],  // registration_date - system enrollment
+                        row[13]   // gp_surgery_id - primary care provider
                 );
 
                 patients.add(p);
@@ -53,30 +55,23 @@ public class PatientRepository {
             System.err.println("Failed to load patients: " + ex.getMessage());
         }
     }
-
-    // ============================================================
-    // AUTO-ID GENERATOR  (P001 → P002 → P003 → …)
-    // ============================================================
+        //Made By Misbah Al Rehman. SRN: 24173647
+    // Generates next sequential patient identifier
     public String generateNewId() {
-
         int max = 0;
-
         for (Patient p : patients) {
             try {
+                // Extract numeric portion from ID (e.g., "P001" → 1)
                 int num = Integer.parseInt(p.getId().substring(1));
                 if (num > max) max = num;
             } catch (Exception ignore) {}
         }
-
         return String.format("P%03d", max + 1);
     }
 
-    // ============================================================
-    // ADD PATIENT + APPEND TO CSV
-    // ============================================================
+    // Adds patient to memory and appends to CSV file
     public void addAndAppend(Patient p) {
         patients.add(p);
-
         try {
             CsvUtils.appendLine(csvPath, new String[]{
                     p.getId(),
@@ -94,29 +89,24 @@ public class PatientRepository {
                     p.getRegistrationDate(),
                     p.getGpSurgeryId()
             });
-
         } catch (IOException ex) {
             System.err.println("Failed to append patient: " + ex.getMessage());
         }
     }
 
-    // ============================================================
-    // UPDATE PATIENT + UPDATE CSV
-    // ============================================================
+    // Updates existing patient in memory and persists to CSV
     public void update(Patient updatedPatient) {
-        // Find the patient by ID and update their information
         for (int i = 0; i < patients.size(); i++) {
             Patient patient = patients.get(i);
             if (patient.getId().equals(updatedPatient.getId())) {
-                // Update the patient in the list
+                // Replace patient record in memory
                 patients.set(i, updatedPatient);
                 
-                // Update the CSV file
+                // Persist all changes to CSV file
                 try {
-                    // Rewrite the entire CSV file with updated data
                     List<String[]> allData = new ArrayList<>();
                     
-                    // Add header row first
+                    // Add CSV header row with column definitions
                     allData.add(new String[]{
                         "patient_id", "first_name", "last_name", "date_of_birth", 
                         "nhs_number", "gender", "phone_number", "email", 
@@ -124,7 +114,7 @@ public class PatientRepository {
                         "emergency_contact_phone", "registration_date", "gp_surgery_id"
                     });
                     
-                    // Add all patients (including updated one)
+                    // Convert all patients to CSV row format
                     for (Patient p : patients) {
                         allData.add(new String[]{
                             p.getId(),
@@ -144,7 +134,7 @@ public class PatientRepository {
                         });
                     }
                     
-                    // Write back to CSV
+                    // Write complete dataset to CSV file
                     CsvUtils.writeCsv(csvPath, allData);
                     
                 } catch (IOException ex) {
@@ -153,22 +143,16 @@ public class PatientRepository {
                 return;
             }
         }
-        
         System.err.println("Patient not found for update: " + updatedPatient.getId());
     }
 
-    // ============================================================
-    // REMOVE PATIENT + UPDATE CSV
-    // ============================================================
+    // Removes patient from memory and updates CSV file
     public void remove(Patient p) {
         patients.remove(p);
-        // Also need to update CSV - add this functionality
         updateCsvFile();
     }
     
-    // ============================================================
-    // REMOVE BY ID
-    // ============================================================
+    // Removes patient by identifier lookup
     public void removeById(String id) {
         Patient patientToRemove = null;
         for (Patient p : patients) {
@@ -183,16 +167,12 @@ public class PatientRepository {
         }
     }
 
-    // ============================================================
-    // GET ALL PATIENTS
-    // ============================================================
+    // Returns all patient records in the repository
     public List<Patient> getAll() {
         return patients;
     }
 
-    // ============================================================
-    // FIND BY ID
-    // ============================================================
+    // Retrieves patient by unique identifier
     public Patient findById(String id) {
         for (Patient p : patients) {
             if (p.getId().equals(id)) {
@@ -202,22 +182,20 @@ public class PatientRepository {
         return null;
     }
     
-    // ============================================================
-    // NEW METHOD: FIND PATIENTS BY CLINICIAN ID USING APPOINTMENTS
-    // ============================================================
+    // Returns patients associated with specific clinician via appointments
     public List<Patient> findByClinicianId(String clinicianId, AppointmentRepository appointmentRepo) {
         List<Patient> clinicianPatients = new ArrayList<>();
         
-        // First, get all appointments for this clinician
+        // Retrieve all appointments for specified clinician
         List<Appointment> clinicianAppointments = appointmentRepo.findByClinicianId(clinicianId);
         
-        // Then, get unique patient IDs from those appointments
+        // Extract unique patient identifiers from appointments
         Set<String> patientIds = new HashSet<>();
         for (Appointment a : clinicianAppointments) {
             patientIds.add(a.getPatientId());
         }
         
-        // Finally, find those patients
+        // Find corresponding patient records
         for (String patientId : patientIds) {
             Patient patient = findById(patientId);
             if (patient != null) {
@@ -228,14 +206,12 @@ public class PatientRepository {
         return clinicianPatients;
     }
     
-    // ============================================================
-    // PRIVATE HELPER: UPDATE CSV FILE
-    // ============================================================
+    // Writes all patient records to CSV file (full persistence)
     private void updateCsvFile() {
         try {
             List<String[]> allData = new ArrayList<>();
             
-            // Add header row
+            // Add CSV header row with column definitions
             allData.add(new String[]{
                 "patient_id", "first_name", "last_name", "date_of_birth", 
                 "nhs_number", "gender", "phone_number", "email", 
@@ -243,7 +219,7 @@ public class PatientRepository {
                 "emergency_contact_phone", "registration_date", "gp_surgery_id"
             });
             
-            // Add all patients
+            // Convert all patients to CSV row format
             for (Patient p : patients) {
                 allData.add(new String[]{
                     p.getId(),
@@ -263,7 +239,7 @@ public class PatientRepository {
                 });
             }
             
-            // Write to CSV
+            // Write complete dataset to CSV file
             CsvUtils.writeCsv(csvPath, allData);
             
         } catch (IOException ex) {

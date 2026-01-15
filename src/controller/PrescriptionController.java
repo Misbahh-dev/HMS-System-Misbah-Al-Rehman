@@ -9,21 +9,26 @@ import model.Patient;
 import model.Clinician;
 import model.Appointment;
 import view.PrescriptionView;
-
+//Made By Misbah Al Rehman. SRN: 24173647
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 
 public class PrescriptionController {
 
+    // Core data repositories for prescription management
     private final PrescriptionRepository repository;
     private final PatientRepository patientRepository;
     private final ClinicianRepository clinicianRepository;
     private final AppointmentRepository appointmentRepository;
+    // UI component for displaying prescription data
     private final PrescriptionView view;
-    private String currentPatientId; // For filtering prescriptions by patient
-    private String currentClinicianId; // For filtering prescriptions by clinician
+    // User context for filtering and access control
+    private String currentPatientId;
+    private String currentClinicianId;
     private String currentStaffId;
+
+    // Initializes controller with all required dependencies
     public PrescriptionController(PrescriptionRepository repository,
                                   PatientRepository patientRepository,
                                   ClinicianRepository clinicianRepository,
@@ -37,21 +42,14 @@ public class PrescriptionController {
         this.view = view;
 
         view.setController(this);
-
-        // Initial setup - will be updated based on user role
         setupForUserRole();
     }
     
-    // ============================================================
-    // NEW METHOD: Setup based on user role (initially assume patient)
-    // ============================================================
+    // Configures initial UI state for security purposes
     private void setupForUserRole() {
-        // Initially assume patient view (most restrictive)
-        // This will be updated when setCurrentPatientId/setCurrentClinicianId is called
         view.setReadOnlyMode(true);
         view.hideAddUpdateButtons();
         
-        // Populate dropdowns with initial data
         view.populateDropdowns(
                 getPatientIds(),
                 getClinicianIds(),
@@ -63,21 +61,17 @@ public class PrescriptionController {
         refreshView();
     }
     
-    // ============================================================
-    // Set current patient ID for filtering
-    // ============================================================
+    // Configures view for patient users accessing own data
     public void setCurrentPatientId(String patientId) {
         this.currentPatientId = patientId;
-        this.currentClinicianId = null; // Clear clinician ID if set
+        this.currentClinicianId = null;
         
-        // PATIENT VIEW: Read-only mode
         view.setReadOnlyMode(true);
         view.hideAddUpdateButtons();
         view.setTitle("My Prescriptions (View Only)");
         
-        refreshView(); // Refresh to show filtered data
+        refreshView();
         
-        // Update dropdowns with filtered data
         view.populateDropdowns(
                 getPatientIds(),
                 getClinicianIds(),
@@ -87,38 +81,30 @@ public class PrescriptionController {
         );
     }
     
-    // ============================================================
-    // Set current clinician ID for filtering
-    // ============================================================
+    // Configures view for clinician users managing prescriptions
     public void setCurrentClinicianId(String clinicianId) {
         this.currentClinicianId = clinicianId;
-        this.currentPatientId = null; // Clear patient ID if set
+        this.currentPatientId = null;
         
-        // CLINICIAN VIEW: Edit mode
         view.setReadOnlyMode(false);
         view.showAddUpdateButtons();
         view.setTitle("Manage Prescriptions");
         
-        refreshView(); // Refresh to show filtered data
+        refreshView();
     }
     
-    // ============================================================
-    // NEW: Set current staff ID for filtering (for staff)
-    // ============================================================
+    // Configures view for staff users with read-only access
     public void setCurrentStaffId(String staffId) {
         this.currentPatientId = null;
         this.currentClinicianId = null;
         this.currentStaffId = staffId;
-// Clear patient and clinician IDs
         
-        // STAFF VIEW: Can view all prescriptions
         view.setReadOnlyMode(true);
         view.hideAddUpdateButtons();
         view.setTitle("All Prescriptions");
         
-        refreshView(); // Refresh to show filtered data
+        refreshView();
         
-        // Update dropdowns with full access
         view.populateDropdowns(
                 getPatientIds(),
                 getClinicianIds(),
@@ -128,75 +114,63 @@ public class PrescriptionController {
         );
     }
     
-    // ============================================================
-    // NEW: Method for staff to view all prescriptions (admin view)
-    // ============================================================
+    // Configures administrative view with full system access
     public void setAdminView() {
         this.currentPatientId = null;
         this.currentClinicianId = null;
-         this.currentStaffId = null;
-         view.setTitle("Prescriptions (Admin Mode)"); 
+        this.currentStaffId = null;
+        view.setTitle("Prescriptions (Admin Mode)"); 
         refreshView();
     }
 
+    // Returns the view component for UI display
     public PrescriptionView getView() {
         return view;
     }
 
-    // ============================================================
-    // Show filtered prescriptions based on user role
-    // ============================================================
-  public void refreshView() {
-    List<Prescription> prescriptionsToShow;
-    
-    if (currentPatientId != null && !currentPatientId.isEmpty()) {
-        // Patient view: Show only this patient's prescriptions
-        prescriptionsToShow = getPrescriptionsForPatient(currentPatientId);
-        view.setReadOnlyMode(true);
-        view.hideAddUpdateButtons();
-        view.setTitle("My Prescriptions (View Only)");
+    // Updates prescription display based on user permissions
+    public void refreshView() {
+        List<Prescription> prescriptionsToShow;
         
-    } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-        // Clinician view: Show prescriptions issued by this clinician
-        prescriptionsToShow = getPrescriptionsByClinician(currentClinicianId);
-        view.setReadOnlyMode(false);
-        view.showAddUpdateButtons();
-        view.setTitle("Manage Prescriptions");
+        if (currentPatientId != null && !currentPatientId.isEmpty()) {
+            prescriptionsToShow = getPrescriptionsForPatient(currentPatientId);
+            view.setReadOnlyMode(true);
+            view.hideAddUpdateButtons();
+            view.setTitle("My Prescriptions (View Only)");
+            
+        } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
+            prescriptionsToShow = getPrescriptionsByClinician(currentClinicianId);
+            view.setReadOnlyMode(false);
+            view.showAddUpdateButtons();
+            view.setTitle("Manage Prescriptions");
+            
+        } else if (currentStaffId != null && !currentStaffId.isEmpty()) {
+            prescriptionsToShow = repository.getAll();
+            view.setReadOnlyMode(true);
+            view.hideAddUpdateButtons();
+            view.setTitle("All Prescriptions (View Only)");
+            
+        } else {
+            prescriptionsToShow = repository.getAll();
+            view.setReadOnlyMode(false);
+            view.showAddUpdateButtons();
+            view.setTitle("All Prescriptions");
+        }
         
-    } else if (currentStaffId != null && !currentStaffId.isEmpty()) {
-        // STAFF view: Show all prescriptions (READ-ONLY)
-        prescriptionsToShow = repository.getAll();
-        view.setReadOnlyMode(true);
-        view.hideAddUpdateButtons();
-        view.setTitle("All Prescriptions (View Only)");
+        view.showPrescriptions(prescriptionsToShow);
         
-    } else {
-        // ADMIN view: Show all prescriptions (EDITABLE)
-        prescriptionsToShow = repository.getAll();
-        view.setReadOnlyMode(false);
-        view.showAddUpdateButtons();
-        view.setTitle("All Prescriptions");
+        if (currentPatientId == null || currentPatientId.isEmpty()) {
+            view.setNextId(repository.generateNewId());
+        }
     }
-    
-    view.showPrescriptions(prescriptionsToShow);
-    
-    // Only generate new ID for clinicians/staff/admin (not for patients)
-    if (currentPatientId == null || currentPatientId.isEmpty()) {
-        view.setNextId(repository.generateNewId());
-    }
-}
 
-    // ============================================================
-    // Filter patient IDs based on user role
-    // ============================================================
+    // Returns patient IDs visible to current user
     public List<String> getPatientIds() {
         List<String> ids = new ArrayList<>();
         
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient can only see their own ID in dropdown
             ids.add(currentPatientId);
         } else {
-            // Clinicians/staff/admin can see all patient IDs
             for (Patient p : patientRepository.getAll()) {
                 ids.add(p.getId());
             }
@@ -204,17 +178,13 @@ public class PrescriptionController {
         return ids;
     }
 
-    // ============================================================
-    // Filter clinician IDs based on user role
-    // ============================================================
+    // Returns clinician IDs visible to current user
     public List<String> getClinicianIds() {
         List<String> ids = new ArrayList<>();
         
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician can only see their own ID in dropdown
             ids.add(currentClinicianId);
         } else {
-            // Patients/staff/admin can see all clinician IDs
             for (Clinician c : clinicianRepository.getAll()) {
                 ids.add(c.getId());
             }
@@ -222,28 +192,23 @@ public class PrescriptionController {
         return ids;
     }
 
-    // ============================================================
-    // Filter appointment IDs based on user role
-    // ============================================================
+    // Returns appointment IDs visible to current user
     public List<String> getAppointmentIds() {
         List<String> ids = new ArrayList<>();
         
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // Patient: Show only their own appointments
             for (Appointment a : appointmentRepository.getAll()) {
                 if (a.getPatientId().equals(currentPatientId)) {
                     ids.add(a.getId());
                 }
             }
         } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // Clinician: Show only appointments with this clinician
             for (Appointment a : appointmentRepository.getAll()) {
                 if (a.getClinicianId().equals(currentClinicianId)) {
                     ids.add(a.getId());
                 }
             }
         } else {
-            // Staff/Admin: Show all appointments
             for (Appointment a : appointmentRepository.getAll()) {
                 ids.add(a.getId());
             }
@@ -251,11 +216,9 @@ public class PrescriptionController {
         return ids;
     }
 
-    // ============================================================
-    // ADD PRESCRIPTION - PATIENTS CANNOT ADD
-    // ============================================================
+    // Adds new prescription with permission validation
     public void addPrescription(Prescription p) {
-        // Security: Patients cannot add prescriptions
+        // Prevent patients from creating prescriptions
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
             JOptionPane.showMessageDialog(view, 
                 "Patients cannot issue prescriptions. Please contact your clinician.",
@@ -264,7 +227,7 @@ public class PrescriptionController {
             return;
         }
         
-        // Clinicians can only issue prescriptions under their name
+        // Ensure clinicians only issue prescriptions under their name
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
             if (!p.getClinicianId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
@@ -278,18 +241,14 @@ public class PrescriptionController {
         repository.addAndAppend(p);
         refreshView();
         
-        // Show success message for clinicians/staff/admin
         JOptionPane.showMessageDialog(view, 
             "Prescription added successfully!",
             "Success", 
             JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // ============================================================
-    // UPDATE PRESCRIPTION - PATIENTS CAN ONLY UPDATE STATUS
-    // ============================================================
+    // Updates prescription with role-based permission checks
     public void updatePrescription(Prescription p) {
-        // Find the original prescription to check permissions
         Prescription original = null;
         for (Prescription pres : repository.getAll()) {
             if (pres.getId().equals(p.getId())) {
@@ -306,9 +265,7 @@ public class PrescriptionController {
             return;
         }
         
-        // Check user permissions
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // PATIENT: Can only update status (e.g., mark as collected)
             if (!original.getPatientId().equals(currentPatientId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only update your own prescriptions.",
@@ -317,24 +274,23 @@ public class PrescriptionController {
                 return;
             }
             
-            // Patients can only change status and collection date fields
-            // Keep all other fields the same as original
+            // Patients can only update status and collection date
             Prescription limitedUpdate = new Prescription(
                 p.getId(),
-                original.getPatientId(),          // Keep original patient
-                original.getClinicianId(),        // Keep original clinician
-                original.getAppointmentId(),      // Keep original appointment
-                original.getPrescriptionDate(),   // Keep original date
-                original.getMedication(),         // Keep original medication
-                original.getDosage(),             // Keep original dosage
-                original.getFrequency(),          // Keep original frequency
-                original.getDurationDays(),       // Keep original duration
-                original.getQuantity(),           // Keep original quantity
-                original.getInstructions(),       // Keep original instructions
-                original.getPharmacyName(),       // Keep original pharmacy
-                p.getStatus(),                    // ONLY status can be updated by patient
-                original.getIssueDate(),          // Keep original issue date
-                p.getCollectionDate()             // Collection date can be updated
+                original.getPatientId(),
+                original.getClinicianId(),
+                original.getAppointmentId(),
+                original.getPrescriptionDate(),
+                original.getMedication(),
+                original.getDosage(),
+                original.getFrequency(),
+                original.getDurationDays(),
+                original.getQuantity(),
+                original.getInstructions(),
+                original.getPharmacyName(),
+                p.getStatus(),
+                original.getIssueDate(),
+                p.getCollectionDate()
             );
             
             repository.update(limitedUpdate);
@@ -344,7 +300,6 @@ public class PrescriptionController {
                 JOptionPane.INFORMATION_MESSAGE);
             
         } else if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // CLINICIAN: Can update their own prescriptions
             if (!original.getClinicianId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only update prescriptions you issued.",
@@ -360,7 +315,6 @@ public class PrescriptionController {
                 JOptionPane.INFORMATION_MESSAGE);
             
         } else {
-            // STAFF/ADMIN: Can update any prescription
             repository.update(p);
             JOptionPane.showMessageDialog(view, 
                 "Prescription updated successfully!",
@@ -371,12 +325,8 @@ public class PrescriptionController {
         refreshView();
     }
 
-   
-    // ============================================================
-    // DELETE PRESCRIPTION - PATIENTS CANNOT DELETE
-    // ============================================================
+    // Deletes prescription with comprehensive permission checks
     public void deleteById(String id) {
-        // Find the prescription to check permissions
         Prescription prescriptionToDelete = null;
         for (Prescription p : repository.getAll()) {
             if (p.getId().equals(id)) {
@@ -394,9 +344,7 @@ public class PrescriptionController {
             return;
         }
         
-        // Security checks
         if (currentPatientId != null && !currentPatientId.isEmpty()) {
-            // PATIENT: Cannot delete prescriptions
             JOptionPane.showMessageDialog(view, 
                 "Patients cannot delete prescriptions.",
                 "Access Denied", 
@@ -406,7 +354,6 @@ public class PrescriptionController {
         }
         
         if (currentClinicianId != null && !currentClinicianId.isEmpty()) {
-            // CLINICIAN: Can only delete their own prescriptions
             if (!prescriptionToDelete.getClinicianId().equals(currentClinicianId)) {
                 JOptionPane.showMessageDialog(view, 
                     "You can only delete prescriptions you issued.",
@@ -417,7 +364,6 @@ public class PrescriptionController {
             }
         }
         
-        // STAFF/ADMIN or authorized clinician can delete
         repository.removeById(id);
         JOptionPane.showMessageDialog(view, 
             "Prescription deleted successfully!",
@@ -426,9 +372,7 @@ public class PrescriptionController {
         refreshView();
     }
     
-    // ============================================================
-    // Get prescriptions for specific patient
-    // ============================================================
+    // Retrieves all prescriptions for specific patient
     public List<Prescription> getPrescriptionsForPatient(String patientId) {
         List<Prescription> patientPrescriptions = new ArrayList<>();
         for (Prescription p : repository.getAll()) {
@@ -439,9 +383,7 @@ public class PrescriptionController {
         return patientPrescriptions;
     }
     
-    // ============================================================
-    // Get prescriptions issued by specific clinician
-    // ============================================================
+    // Retrieves all prescriptions issued by specific clinician
     public List<Prescription> getPrescriptionsByClinician(String clinicianId) {
         List<Prescription> clinicianPrescriptions = new ArrayList<>();
         for (Prescription p : repository.getAll()) {
@@ -452,9 +394,7 @@ public class PrescriptionController {
         return clinicianPrescriptions;
     }
     
-    // ============================================================
-    // Get medication history for patient
-    // ============================================================
+    // Returns medication history for specific patient
     public List<String> getMedicationHistoryForPatient(String patientId) {
         List<String> medications = new ArrayList<>();
         for (Prescription p : repository.getAll()) {
@@ -467,23 +407,17 @@ public class PrescriptionController {
         return medications;
     }
     
-    // ============================================================
-    // NEW: Check if current user is a patient
-    // ============================================================
+    // Checks if current view is patient-restricted
     public boolean isPatientView() {
         return currentPatientId != null && !currentPatientId.isEmpty();
     }
     
-    // ============================================================
-    // NEW: Check if current user is a clinician
-    // ============================================================
+    // Checks if current view is clinician-restricted
     public boolean isClinicianView() {
         return currentClinicianId != null && !currentClinicianId.isEmpty();
     }
     
-    // ============================================================
-    // NEW: Check if current user is staff/admin
-    // ============================================================
+    // Checks if current view is staff/administrator
     public boolean isStaffView() {
         return currentPatientId == null && currentClinicianId == null;
     }
